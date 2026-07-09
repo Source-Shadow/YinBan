@@ -1,0 +1,4 @@
+# Claude Code / AI Agent 个人文件，不要上传到仓库
+.claude/memory/
+MEMORY.md
+.claude/settings.local.json
