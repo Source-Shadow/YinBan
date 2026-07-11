@@ -14,6 +14,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.webkit.WebResourceError
+import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -52,17 +57,19 @@ class GuardianActivity : AppCompatActivity() {
     private fun initViews() {
         binding.tvGuardianRoom.text = prefManager.room
 
+        // 配置 WebView（MJPEG 视频流）
+        configureWebView()
+
         // 通话
         binding.btnGuardianVideoCall.setOnClickListener { startCall("video") }
         binding.btnGuardianAudioCall.setOnClickListener { startCall("audio") }
 
-        // SOS 面板
+        // SOS 面板 — 查看画面
         binding.btnSosViewVideo.setOnClickListener {
             currentStreamUrl?.let {
-                binding.surfaceVideo.visibility = View.VISIBLE
-                binding.tvGuardianVideoPlaceholder.text = "📺 实时画面加载中..."
-                Log.i(TAG, "[MediaPlayer] 载入 SOS 实时画面: $it")
-            }
+                loadMJPEG(it)
+                Log.i(TAG, "[WebView] 手动查看 SOS 实时画面: $it")
+            } ?: Toast.makeText(this, "暂无视频流地址", Toast.LENGTH_SHORT).show()
         }
         binding.btnSosDismiss.setOnClickListener {
             binding.cardSosAlert.visibility = View.GONE
@@ -78,6 +85,42 @@ class GuardianActivity : AppCompatActivity() {
 
         // 退出
         binding.btnGuardianLogout.setOnClickListener { logout() }
+    }
+
+    // ═══════════════════════════════════════════
+    // WebView 初始化（MJPEG 流播放）
+    // ═══════════════════════════════════════════
+
+    private fun configureWebView() {
+        binding.webVideo.apply {
+            settings.apply {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                mediaPlaybackRequiresUserGesture = false
+                loadWithOverviewMode = true
+                useWideViewPort = true
+                builtInZoomControls = false
+                displayZoomControls = false
+                cacheMode = WebSettings.LOAD_NO_CACHE
+                mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+            }
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
+
+            webViewClient = object : WebViewClient() {
+                override fun onReceivedError(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                    error: WebResourceError?
+                ) {
+                    Log.e(TAG, "[WebView] 加载失败: code=${error?.errorCode}, desc=${error?.description}")
+                    runOnUiThread { showVideoPlaceholder("视频流连接失败") }
+                }
+
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    Log.i(TAG, "[WebView] MJPEG 页面加载完成")
+                }
+            }
+        }
     }
 
     // ═══════════════════════════════════════════
@@ -108,6 +151,10 @@ class GuardianActivity : AppCompatActivity() {
                 binding.tvGuardianConnection.text = if (connected) "🟡 等待配对" else "🔴 断开"
                 binding.tvGuardianConnection.setTextColor(
                     getColor(if (connected) R.color.status_waiting_text else R.color.status_disconnected))
+                if (!connected) {
+                    currentStreamUrl = null
+                    showVideoPlaceholder("连接已断开")
+                }
             }
         }
 
@@ -190,10 +237,51 @@ class GuardianActivity : AppCompatActivity() {
     private fun handleStreamUrl(msg: YinBanMessage) {
         val data = gson.fromJson(gson.toJson(msg.data), StreamUrlData::class.java)
         currentStreamUrl = data.url
-        Log.i(TAG, "[MediaPlayer] 成功接收到患者端流地址，准备载入: ${data.url}")
+        Log.i(TAG, "[WebView] 收到 MJPEG 流地址: ${data.url}, stream_type=${data.streamType}")
         runOnUiThread {
-            binding.surfaceVideo.visibility = View.VISIBLE
-            binding.tvGuardianVideoPlaceholder.text = "📺 流地址已接收\n${data.url}"
+            loadMJPEG(data.url)
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // MJPEG 流加载 & 占位恢复
+    // ═══════════════════════════════════════════
+
+    private fun loadMJPEG(url: String) {
+        val html = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    * { margin: 0; padding: 0; }
+                    html, body { width: 100%; height: 100%; background: #1A1A2E; overflow: hidden; }
+                    body { display: flex; align-items: center; justify-content: center; }
+                    img { width: 100%; height: 100%; object-fit: contain; display: block; }
+                </style>
+            </head>
+            <body>
+                <img src="$url" alt="MJPEG Stream" />
+            </body>
+            </html>
+        """.trimIndent()
+
+        binding.webVideo.apply {
+            visibility = View.VISIBLE
+            loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
+        }
+        binding.surfaceVideo.visibility = View.GONE
+        binding.tvGuardianVideoPlaceholder.visibility = View.GONE
+        Log.i(TAG, "[WebView] 已载入 MJPEG 流: $url")
+    }
+
+    private fun showVideoPlaceholder(message: String = "等待患者画面") {
+        binding.webVideo.visibility = View.GONE
+        binding.surfaceVideo.visibility = View.GONE
+        binding.tvGuardianVideoPlaceholder.apply {
+            visibility = View.VISIBLE
+            text = "📺\n$message"
         }
     }
 
@@ -219,9 +307,8 @@ class GuardianActivity : AppCompatActivity() {
 
             // 有流地址自动显示
             if (data.streamUrl.isNotBlank()) {
-                binding.surfaceVideo.visibility = View.VISIBLE
-                binding.tvGuardianVideoPlaceholder.text = "🚨 自动接收实时画面..."
-                Log.i(TAG, "[MediaPlayer] SOS 自动载入患者实时画面: ${data.streamUrl}")
+                loadMJPEG(data.streamUrl)
+                Log.i(TAG, "[WebView] SOS 自动载入 MJPEG 实时画面: ${data.streamUrl}")
             }
 
             Toast.makeText(this@GuardianActivity, "🚨 收到紧急求助！", Toast.LENGTH_LONG).show()
@@ -277,7 +364,22 @@ class GuardianActivity : AppCompatActivity() {
         finish()
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding.webVideo.onResume()
+    }
+
+    override fun onPause() {
+        binding.webVideo.onPause()
+        super.onPause()
+    }
+
     override fun onDestroy() {
+        binding.webVideo.apply {
+            stopLoading()
+            settings.javaScriptEnabled = false
+            destroy()
+        }
         super.onDestroy()
         wsManager.removeMessageListener(msgListener)
     }

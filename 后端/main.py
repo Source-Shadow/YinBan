@@ -5,6 +5,7 @@ WebSocket 消息中转 + 房间管理
 """
 
 import json
+import os
 import uuid
 from datetime import datetime, timezone, timedelta
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
@@ -17,8 +18,8 @@ rooms: dict[str, dict[str, WebSocket]] = {}
 # 中国时区
 CST = timezone(timedelta(hours=8))
 
-# 推流地址前缀（基础版使用占位地址）
-STREAM_BASE_URL = "rtmp://localhost/live"
+# 推流地址 — 从环境变量读取，默认指向硬件同学 Flask MJPEG 服务
+MJPEG_STREAM_URL = os.getenv("MJPEG_STREAM_URL", "http://localhost:5000/video_feed")
 
 
 def make_msg(msg_type: str, data: dict) -> dict:
@@ -113,7 +114,7 @@ async def handle_websocket(
             elif msg_type == "stream_start":
                 stream_type = msg.get("data", {}).get("stream_type", "video")
                 await forward_to_other(room, role, make_msg("stream_url", {
-                    "url": f"{STREAM_BASE_URL}/{room}",
+                    "url": MJPEG_STREAM_URL,
                     "stream_type": stream_type,
                     "status": "live"
                 }))
@@ -122,7 +123,7 @@ async def handle_websocket(
             elif msg_type == "sos_alert":
                 data = dict(msg.get("data", {}))
                 if not data.get("stream_url"):
-                    data["stream_url"] = f"{STREAM_BASE_URL}/{room}"
+                    data["stream_url"] = MJPEG_STREAM_URL
                 forwarded = dict(msg)
                 forwarded["data"] = data
                 await forward_to_other(room, role, forwarded)
@@ -170,5 +171,6 @@ if __name__ == "__main__":
     print("访问 http://localhost:8000 查看状态")
     print("WebSocket: ws://<IP>:8000/ws?room=<房间号>&role=<patient|guardian>")
     print("支持 13 种消息类型")
+    print(f"MJPEG 推流地址: {MJPEG_STREAM_URL}")
     print("=" * 50)
     uvicorn.run(app, host="0.0.0.0", port=8000)
