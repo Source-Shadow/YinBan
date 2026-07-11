@@ -51,7 +51,7 @@ APK 输出路径：`app/build/outputs/apk/debug/app-debug.apk`
 
 4. **在 App 登录页填写这个 IP**（步骤 2 的服务器 IP 输入框）
 
-### 方式二：电脑和手机连同一个 WiFi
+### 方式二：电脑和手机连同一个 WiFi（校园网貌似无法实现，有AP隔离）
 
 1. 电脑和手机连接同一个路由器 WiFi
 2. **查看电脑 IP**：
