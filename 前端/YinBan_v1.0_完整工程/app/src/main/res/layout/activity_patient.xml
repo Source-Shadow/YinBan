@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  路径: app/src/main/res/layout/activity_patient.xml
+  布局: 安心待机 3 : 功能模块 3 : SOS 1
+  患者自主控制视频/音频开关，监护人被动接收
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- ── 顶部状态卡 ── -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_status"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginStart="12dp" android:layout_marginEnd="12dp"
+        android:layout_marginTop="8dp"
+        app:cardCornerRadius="14dp" app:cardElevation="2dp">
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:orientation="vertical"
+            android:padding="12dp">
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:gravity="center_vertical">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="@string/patient_title"
+                    android:textSize="15sp" android:textColor="@color/text_primary"
+                    android:fontFamily="sans-serif-medium" />
+                <TextView android:id="@+id/tv_connection_status"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="🟡 等待连接" android:textSize="12sp" />
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="4dp"
+                android:gravity="center_vertical">
+                <TextView android:text="房间: " android:textSize="12sp"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textColor="@color/text_secondary" />
+                <TextView android:id="@+id/tv_room_number"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="----" android:textSize="12sp"
+                    android:textColor="@color/primary" android:fontFamily="sans-serif-medium" />
+                <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_privacy_mode"
+                    android:layout_width="wrap_content" android:layout_height="28dp"
+                    android:text="隐私" android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ═══════════ 安心待机画面 weight=3 ═══════════ -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_standby"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="3" android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp" android:layout_marginTop="6dp"
+        app:cardCornerRadius="18dp" app:cardElevation="1dp">
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_standby_gradient"
+            android:orientation="vertical" android:gravity="center">
+            <TextView android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:text="🌙"
+                android:textSize="48sp" android:layout_marginBottom="12dp" />
+            <TextView android:id="@+id/tv_standby_title"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="AI 影伴守护中" android:textSize="24sp"
+                android:textColor="@color/text_on_dark" android:fontFamily="sans-serif-medium"
+                android:alpha="0.95" />
+            <TextView android:id="@+id/tv_standby_subtitle"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="已安全守护 0 分钟" android:textSize="15sp"
+                android:textColor="@color/text_on_dark" android:alpha="0.65"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ═══════════ 功能模块区 weight=3 ═══════════ -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_modules"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="3" android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp" android:layout_marginTop="6dp"
+        app:cardCornerRadius="14dp" app:cardElevation="2dp">
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="match_parent" android:orientation="vertical"
+            android:padding="14dp" android:gravity="center_vertical">
+
+            <!-- 视频/音频开关行 -->
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:text="🎥 视频" android:textSize="14sp"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary" android:fontFamily="sans-serif-medium" />
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_video"
+                    android:layout_width="wrap_content" android:layout_height="32dp"
+                    android:layout_marginStart="8dp" />
+                <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+                <TextView android:text="🎤 音频" android:textSize="14sp"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary" android:fontFamily="sans-serif-medium" />
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_audio"
+                    android:layout_width="wrap_content" android:layout_height="32dp"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginTop="10dp" android:layout_marginBottom="10dp"
+                android:background="@color/text_secondary" android:alpha="0.12" />
+
+            <!-- 功能按钮第一行 -->
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_send_location"
+                    android:layout_width="0dp" android:layout_height="48dp"
+                    android:layout_weight="1" android:text="📍\n发送位置"
+                    android:textSize="12sp" app:cornerRadius="12dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_send_device_status"
+                    android:layout_width="0dp" android:layout_height="48dp"
+                    android:layout_weight="1" android:layout_marginStart="8dp"
+                    android:text="📱\n设备状态" android:textSize="12sp"
+                    app:cornerRadius="12dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_go_chat"
+                    android:layout_width="0dp" android:layout_height="48dp"
+                    android:layout_weight="1" android:layout_marginStart="8dp"
+                    android:text="💬\n发消息" android:textSize="12sp"
+                    app:cornerRadius="12dp" android:textColor="@color/primary"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+            </LinearLayout>
+
+            <!-- 功能按钮第二行 -->
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_video_call"
+                    android:layout_width="0dp" android:layout_height="48dp"
+                    android:layout_weight="1" android:text="📹\n视频通话"
+                    android:textSize="12sp" app:cornerRadius="12dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_audio_call"
+                    android:layout_width="0dp" android:layout_height="48dp"
+                    android:layout_weight="1" android:layout_marginStart="8dp"
+                    android:text="🎙️\n语音通话" android:textSize="12sp"
+                    app:cornerRadius="12dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- ═══════════ SOS weight=1 ═══════════ -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_sos"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp" android:layout_marginTop="6dp"
+        android:text="🆘  一 键 求 助"
+        android:textSize="18sp" android:textColor="@color/text_on_dark"
+        android:fontFamily="sans-serif-medium"
+        app:cornerRadius="14dp" app:backgroundTint="@color/error" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_logout"
+        android:layout_width="match_parent" android:layout_height="36dp"
+        android:layout_marginStart="12dp" android:layout_marginEnd="12dp"
+        android:layout_marginTop="4dp" android:layout_marginBottom="8dp"
+        android:text="@string/btn_logout" android:textSize="11sp"
+        android:textColor="@color/error" app:cornerRadius="8dp"
+        style="@style/Widget.MaterialComponents.Button.TextButton" />
+
+</LinearLayout>

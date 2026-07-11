@@ -1,0 +1,284 @@
+// ============================================================
+// 路径: app/src/main/java/com/yinban/ai/ui/GuardianActivity.kt
+// 用途: AI 影伴系统 v1.0 — 监护人端专属画面（重构版）
+// 核心:
+//   1. 实时数据看板（位置/设备/消息）
+//   2. SOS 紧急警报接收面板
+//   3. 视频流容器
+//   4. 远程控制请求 + 音视频通话入口
+// ============================================================
+
+package com.yinban.ai.ui
+
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
+import com.google.gson.Gson
+import com.yinban.ai.R
+import com.yinban.ai.databinding.ActivityGuardianBinding
+import com.yinban.ai.network.*
+import com.yinban.ai.storage.PreferenceManager
+
+class GuardianActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG = "GuardianActivity"
+    }
+
+    private lateinit var binding: ActivityGuardianBinding
+    private lateinit var prefManager: PreferenceManager
+    private lateinit var wsManager: WebSocketManager
+    private val gson = Gson()
+
+    private var currentStreamUrl: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityGuardianBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        prefManager = PreferenceManager.getInstance(this)
+        wsManager = WebSocketManager.getInstance()
+
+        initViews()
+        connectWebSocket()
+    }
+
+    private fun initViews() {
+        binding.tvGuardianRoom.text = prefManager.room
+
+        // 通话
+        binding.btnGuardianVideoCall.setOnClickListener { startCall("video") }
+        binding.btnGuardianAudioCall.setOnClickListener { startCall("audio") }
+
+        // SOS 面板
+        binding.btnSosViewVideo.setOnClickListener {
+            currentStreamUrl?.let {
+                binding.surfaceVideo.visibility = View.VISIBLE
+                binding.tvGuardianVideoPlaceholder.text = "📺 实时画面加载中..."
+                Log.i(TAG, "[MediaPlayer] 载入 SOS 实时画面: $it")
+            }
+        }
+        binding.btnSosDismiss.setOnClickListener {
+            binding.cardSosAlert.visibility = View.GONE
+        }
+
+        // 消息模块 → 跳转聊天页
+        binding.btnGuardianGoChat.setOnClickListener {
+            startActivity(Intent(this, ChatActivity::class.java).apply {
+                putExtra(ChatActivity.EXTRA_ROLE, "guardian")
+                putExtra(ChatActivity.EXTRA_PEER_NAME, "患者")
+            })
+        }
+
+        // 退出
+        binding.btnGuardianLogout.setOnClickListener { logout() }
+    }
+
+    // ═══════════════════════════════════════════
+    // WebSocket
+    // ═══════════════════════════════════════════
+
+    private fun connectWebSocket() {
+        wsManager.addMessageListener(msgListener)
+        wsManager.connect(ip = prefManager.serverIp, room = prefManager.room, role = "guardian")
+    }
+
+    private val msgListener = object : WebSocketManager.MessageListener {
+        override fun onMessage(message: YinBanMessage) {
+            when (message.type) {
+                MessageType.ROOM_STATUS -> handleRoomStatus(message)
+                MessageType.LOCATION_UPDATE -> handleLocation(message)
+                MessageType.DEVICE_STATUS -> handleDeviceStatus(message)
+                MessageType.MANUAL_MESSAGE -> handleManualMsg(message)
+                MessageType.STREAM_URL -> handleStreamUrl(message)
+                MessageType.SOS_ALERT -> handleSosAlert(message)
+                MessageType.CALL_REQUEST -> handleCallRequest(message)
+                else -> {}
+            }
+        }
+
+        override fun onConnectionStateChanged(connected: Boolean) {
+            runOnUiThread {
+                binding.tvGuardianConnection.text = if (connected) "🟡 等待配对" else "🔴 断开"
+                binding.tvGuardianConnection.setTextColor(
+                    getColor(if (connected) R.color.status_waiting_text else R.color.status_disconnected))
+            }
+        }
+
+        override fun onConnectionError(error: String) {
+            runOnUiThread { Toast.makeText(this@GuardianActivity, "连接错误: $error", Toast.LENGTH_LONG).show() }
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 房间状态
+    // ═══════════════════════════════════════════
+
+    private fun handleRoomStatus(msg: YinBanMessage) {
+        val data = gson.fromJson(gson.toJson(msg.data), RoomStatusData::class.java)
+        runOnUiThread {
+            when (data.status) {
+                "paired" -> {
+                    binding.tvGuardianConnection.text = "🟢 已配对"
+                    binding.tvGuardianConnection.setTextColor(getColor(R.color.status_online_text))
+                }
+                "waiting" -> {
+                    binding.tvGuardianConnection.text = "🟡 等待患者"
+                    binding.tvGuardianConnection.setTextColor(getColor(R.color.status_waiting_text))
+                }
+                "disconnected" -> {
+                    binding.tvGuardianConnection.text = "🔴 断开"
+                    binding.tvGuardianConnection.setTextColor(getColor(R.color.status_disconnected))
+                }
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 位置更新
+    // ═══════════════════════════════════════════
+
+    private fun handleLocation(msg: YinBanMessage) {
+        val data = gson.fromJson(gson.toJson(msg.data), LocationUpdateData::class.java)
+        runOnUiThread {
+            binding.tvLocationLat.text = "纬度: ${"%.6f".format(data.lat)}"
+            binding.tvLocationLng.text = "经度: ${"%.6f".format(data.lng)}"
+            binding.tvLocationAccuracy.text = if (data.isPrivacyMode) "精度: ~1.1km (隐私)" else "精度: ${data.accuracy}m"
+            if (data.isSos) {
+                binding.tvLocationAccuracy.text = "⚠️ SOS精确位置: ${data.accuracy}m"
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 设备状态
+    // ═══════════════════════════════════════════
+
+    private fun handleDeviceStatus(msg: YinBanMessage) {
+        val data = gson.fromJson(gson.toJson(msg.data), DeviceStatusData::class.java)
+        runOnUiThread {
+            binding.tvCameraStatus.text = if (data.camera) "摄像头: 🟢" else "摄像头: ⚪"
+            binding.tvCameraStatus.setTextColor(getColor(if (data.camera) R.color.status_online else R.color.text_secondary))
+            binding.tvHeadphoneStatus.text = if (data.headphone) "耳机: 🟢" else "耳机: ⚪"
+            binding.tvHeadphoneStatus.setTextColor(getColor(if (data.headphone) R.color.status_online else R.color.text_secondary))
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 文字消息
+    // ═══════════════════════════════════════════
+
+    private fun handleManualMsg(msg: YinBanMessage) {
+        val data = gson.fromJson(gson.toJson(msg.data), ManualMessageData::class.java)
+        runOnUiThread {
+            binding.tvPatientMessage.text = data.content
+            Snackbar.make(binding.root, "💬 患者: ${data.content}", Snackbar.LENGTH_LONG)
+                .setAction("查看") {}.show()
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 视频流
+    // ═══════════════════════════════════════════
+
+    private fun handleStreamUrl(msg: YinBanMessage) {
+        val data = gson.fromJson(gson.toJson(msg.data), StreamUrlData::class.java)
+        currentStreamUrl = data.url
+        Log.i(TAG, "[MediaPlayer] 成功接收到患者端流地址，准备载入: ${data.url}")
+        runOnUiThread {
+            binding.surfaceVideo.visibility = View.VISIBLE
+            binding.tvGuardianVideoPlaceholder.text = "📺 流地址已接收\n${data.url}"
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 🚨 SOS 紧急警报接收
+    // ═══════════════════════════════════════════
+
+    private fun handleSosAlert(msg: YinBanMessage) {
+        val data = gson.fromJson(gson.toJson(msg.data), SosAlertData::class.java)
+        currentStreamUrl = data.streamUrl
+        Log.w(TAG, "🚨 收到 SOS 警报! ${data.message} 位置:(${data.lat},${data.lng})")
+
+        runOnUiThread {
+            // 高亮显示 SOS 面板
+            binding.cardSosAlert.visibility = View.VISIBLE
+            binding.tvSosMessage.text = data.message
+            binding.tvSosLocation.text = "${"%.6f".format(data.lat)}, ${"%.6f".format(data.lng)}"
+
+            // 同时更新看板
+            binding.tvLocationLat.text = "纬度: ${"%.6f".format(data.lat)}"
+            binding.tvLocationLng.text = "经度: ${"%.6f".format(data.lng)}"
+            binding.tvLocationAccuracy.text = "⚠️ SOS紧急定位"
+
+            // 有流地址自动显示
+            if (data.streamUrl.isNotBlank()) {
+                binding.surfaceVideo.visibility = View.VISIBLE
+                binding.tvGuardianVideoPlaceholder.text = "🚨 自动接收实时画面..."
+                Log.i(TAG, "[MediaPlayer] SOS 自动载入患者实时画面: ${data.streamUrl}")
+            }
+
+            Toast.makeText(this@GuardianActivity, "🚨 收到紧急求助！", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 通话请求
+    // ═══════════════════════════════════════════
+
+    private fun handleCallRequest(msg: YinBanMessage) {
+        val data = gson.fromJson(gson.toJson(msg.data), CallRequestData::class.java)
+        val callType = data.callType
+        val displayType = if (callType == "video") "视频" else "语音"
+        runOnUiThread {
+            MaterialAlertDialogBuilder(this@GuardianActivity)
+                .setTitle("📞 ${displayType}通话请求")
+                .setMessage("患者邀请你进行${displayType}通话")
+                .setPositiveButton("接听") { _, _ ->
+                    wsManager.sendMessage(MessageType.CALL_RESPONSE, CallResponseData(true, "guardian"))
+                    startActivity(Intent(this@GuardianActivity, VideoCallActivity::class.java).apply {
+                        putExtra(VideoCallActivity.EXTRA_CALL_TYPE, callType)
+                        putExtra(VideoCallActivity.EXTRA_ROOM, prefManager.room)
+                    })
+                }
+                .setNegativeButton("拒绝") { _, _ ->
+                    wsManager.sendMessage(MessageType.CALL_RESPONSE, CallResponseData(false, "guardian"))
+                }
+                .show()
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 操作
+    // ═══════════════════════════════════════════
+
+    private fun startCall(callType: String) {
+        if (!wsManager.isConnected()) { Toast.makeText(this, "未连接", Toast.LENGTH_SHORT).show(); return }
+        wsManager.sendMessage(MessageType.CALL_REQUEST, CallRequestData(callType, "guardian"))
+        startActivity(Intent(this, VideoCallActivity::class.java).apply {
+            putExtra(VideoCallActivity.EXTRA_CALL_TYPE, callType)
+            putExtra(VideoCallActivity.EXTRA_ROOM, prefManager.room)
+        })
+    }
+
+    private fun logout() {
+        wsManager.removeMessageListener(msgListener)
+        wsManager.disconnect()
+        prefManager.clearLoginInfo()
+        startActivity(Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+        finish()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        wsManager.removeMessageListener(msgListener)
+    }
+}

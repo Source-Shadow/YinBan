@@ -2,3 +2,31 @@
 .claude/memory/
 MEMORY.md
 .claude/settings.local.json
+
+# IDE / Editor
+.vscode/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/caches/
+.idea/libraries/
+
+# Android / Gradle 构建产物
+.gradle/
+build/
+app/build/
+*.apk
+*.aab
+*.dex
+*.class
+*.log
+local.properties
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# 临时文件
+test.html

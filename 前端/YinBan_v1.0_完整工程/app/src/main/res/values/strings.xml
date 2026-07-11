@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  路径: app/src/main/res/values/strings.xml
+  用途: AI 影伴系统 — 全局字符串资源
+-->
+<resources>
+    <string name="app_name">AI 影伴</string>
+    <string name="app_name_en">YinBan AI Companion</string>
+
+    <!-- 登录页 -->
+    <string name="login_title">AI 影伴系统</string>
+    <string name="login_subtitle">v1.0 商业化版本</string>
+    <string name="login_account_hint">账号</string>
+    <string name="login_password_hint">密码</string>
+    <string name="login_room_hint">统一匹配码 / 房间号</string>
+    <string name="login_server_ip_hint">后端服务器 IP</string>
+    <string name="login_button">登 录</string>
+    <string name="login_register_button">注 册</string>
+    <string name="login_role_patient">患者端</string>
+    <string name="login_role_guardian">监护人端</string>
+    <string name="login_role_label">选择身份角色</string>
+
+    <!-- 患者端 -->
+    <string name="patient_title">患者端 · AI 影伴</string>
+    <string name="patient_room_status_waiting">🟡 等待监护人连入…</string>
+    <string name="patient_room_status_paired">🟢 已配对成功</string>
+    <string name="patient_room_status_disconnected">🔴 连接已断开</string>
+    <string name="patient_video_placeholder">📷 视频流预览区\n（等待硬件模组注入）</string>
+    <string name="patient_btn_start_stream">▶ 模拟开始推流</string>
+    <string name="patient_btn_stop_stream">⏹ 停止推流</string>
+    <string name="patient_btn_send_location">📍 发送位置同步</string>
+    <string name="patient_btn_send_device_status">📱 上报设备状态</string>
+    <string name="patient_btn_send_manual_msg">💬 发送文字消息</string>
+    <string name="patient_privacy_mode">🔒 隐私模式</string>
+    <string name="patient_privacy_mode_desc">开启后位置信息将模糊化处理</string>
+
+    <!-- 监护人端 -->
+    <string name="guardian_title">监护人端 · AI 影伴</string>
+    <string name="guardian_location_label">📍 患者位置</string>
+    <string name="guardian_device_status_label">📱 设备状态</string>
+    <string name="guardian_camera_status">摄像头</string>
+    <string name="guardian_headphone_status">耳机</string>
+    <string name="guardian_video_placeholder">📺 视频直播流预览区\n（等待患者端推流地址）</string>
+    <string name="guardian_btn_control_camera">📸 请求开启摄像头</string>
+    <string name="guardian_btn_control_headphone">🎧 请求开启音频</string>
+    <string name="guardian_btn_disconnect">断开连接</string>
+
+    <!-- 隐私确认弹窗 -->
+    <string name="privacy_dialog_title">隐私确认</string>
+    <string name="privacy_dialog_message">监护人请求查看您的实时画面，您是否愿意分享？</string>
+    <string name="privacy_dialog_share">分享</string>
+    <string name="privacy_dialog_decline">暂不分享</string>
+    <string name="privacy_dialog_decline_msg">患者当前需要独立空间</string>
+
+    <!-- 通用 -->
+    <string name="btn_logout">退出登录</string>
+    <string name="label_room">房间号</string>
+    <string name="label_status">连接状态</string>
+    <string name="label_not_available">暂无数据</string>
+</resources>

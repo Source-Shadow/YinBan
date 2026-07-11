@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  路径: app/src/main/res/values/themes.xml
+  用途: AI 影伴系统 — Material 主题定义
+  注意: 自定义 Widget 样式使用下划线命名，避免 AAPT2 隐式父子解析
+-->
+<resources>
+    <!-- 基础主题 -->
+    <style name="Theme.YinBan" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="android:navigationBarColor">@color/primary_dark</item>
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+
+    <!-- Splash 启动主题 -->
+    <style name="Theme.YinBan.Splash" parent="Theme.YinBan">
+        <item name="android:windowBackground">@color/surface</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <!-- 全屏通话主题 -->
+    <style name="Theme.YinBan.Fullscreen" parent="Theme.YinBan">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+
+    <!-- 患者端状态卡片 -->
+    <style name="YinBanCardStatus" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="contentPadding">16dp</item>
+    </style>
+
+    <!-- 视频容器 -->
+    <style name="YinBanVideoContainer">
+        <item name="android:background">@color/video_container_bg</item>
+        <item name="cornerRadius">24dp</item>
+    </style>
+
+    <!-- 主按钮 -->
+    <style name="YinBanButtonPrimary" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/primary</item>
+        <item name="android:textColor">@color/text_on_dark</item>
+        <item name="cornerRadius">12dp</item>
+        <item name="android:padding">14dp</item>
+    </style>
+
+    <!-- 监护人看板数据标签 -->
+    <style name="YinBanLabelDashboard">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="YinBanLabelDashboardValue">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+</resources>
