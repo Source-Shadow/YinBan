@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 监护栏 Fragment v2.0 -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 2×2 快捷入口 -->
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_shortcut_message"
+                android:layout_width="0dp" android:layout_height="100dp"
+                android:layout_weight="1" android:layout_marginEnd="6dp"
+                android:contentDescription="消息，点击查看消息"
+                app:cardCornerRadius="20dp" app:cardElevation="2dp"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/surface">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center" android:padding="12dp">
+                    <View android:layout_width="44dp" android:layout_height="44dp"
+                        android:background="@drawable/bg_step_active"
+                        android:backgroundTint="#106366F1"
+                        android:layout_marginBottom="8dp" />
+                    <TextView android:text="💬" android:textSize="20sp"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginTop="-40dp" />
+                    <TextView android:text="消息" android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <TextView android:id="@+id/tv_unread_count"
+                        android:text="查看消息" android:textSize="11sp"
+                        android:textColor="@color/text_tertiary"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_shortcut_location"
+                android:layout_width="0dp" android:layout_height="100dp"
+                android:layout_weight="1" android:layout_marginStart="6dp"
+                android:contentDescription="位置，查看患者位置"
+                app:cardCornerRadius="20dp" app:cardElevation="2dp"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/surface">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center" android:padding="12dp">
+                    <View android:layout_width="44dp" android:layout_height="44dp"
+                        android:background="@drawable/bg_step_active"
+                        android:backgroundTint="#10059669"
+                        android:layout_marginBottom="8dp" />
+                    <TextView android:text="📍" android:textSize="20sp"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginTop="-40dp" />
+                    <TextView android:text="位置" android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <TextView android:id="@+id/tv_location_status"
+                        android:text="等待定位" android:textSize="11sp"
+                        android:textColor="@color/text_tertiary"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_shortcut_call"
+                android:layout_width="0dp" android:layout_height="100dp"
+                android:layout_weight="1" android:layout_marginEnd="6dp"
+                android:contentDescription="通话，发起语音或视频通话"
+                app:cardCornerRadius="20dp" app:cardElevation="2dp"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/surface">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center" android:padding="12dp">
+                    <View android:layout_width="44dp" android:layout_height="44dp"
+                        android:background="@drawable/bg_step_active"
+                        android:backgroundTint="#10D97706"
+                        android:layout_marginBottom="8dp" />
+                    <TextView android:text="📞" android:textSize="20sp"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginTop="-40dp" />
+                    <TextView android:text="通话" android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <TextView android:text="立即拨打" android:textSize="11sp"
+                        android:textColor="@color/text_tertiary"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_shortcut_video"
+                android:layout_width="0dp" android:layout_height="100dp"
+                android:layout_weight="1" android:layout_marginStart="6dp"
+                android:contentDescription="画面，查看实时视频"
+                app:cardCornerRadius="20dp" app:cardElevation="2dp"
+                android:clickable="true" android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="@color/surface">
+                <LinearLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center" android:padding="12dp">
+                    <View android:layout_width="44dp" android:layout_height="44dp"
+                        android:background="@drawable/bg_step_active"
+                        android:backgroundTint="#10DC2626"
+                        android:layout_marginBottom="8dp" />
+                    <TextView android:text="🎥" android:textSize="20sp"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginTop="-40dp" />
+                    <TextView android:text="画面" android:textSize="14sp"
+                        android:textColor="@color/text_primary"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <TextView android:text="实时查看" android:textSize="11sp"
+                        android:textColor="@color/text_tertiary"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- 最近消息 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            app:cardCornerRadius="20dp" app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/surface">
+            <LinearLayout android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:orientation="vertical"
+                android:padding="16dp">
+                <TextView android:text="💬 最近消息"
+                    android:textSize="14sp" android:textColor="@color/text_secondary"
+                    android:fontFamily="sans-serif-medium"
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp" />
+                <TextView android:id="@+id/tv_recent_message"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="暂无消息" android:textSize="13sp"
+                    android:textColor="@color/text_primary"
+                    android:padding="12dp"
+                    android:background="@drawable/bg_message_bubble" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</ScrollView>

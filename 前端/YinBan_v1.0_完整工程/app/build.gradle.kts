@@ -55,13 +55,17 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
 
     // Material Design 3
     implementation("com.google.android.material:material:1.11.0")
 
-    // OkHttp (WebSocket)
+    // OkHttp (WebSocket + HTTP)
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Gson
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Coroutines（DeepSeekClient HTTP 异步调用）
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }

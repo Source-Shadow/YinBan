@@ -12,8 +12,11 @@ app/build/
 *.class
 local.properties
 
-# IDE
-.idea/
+# IDE（仅忽略用户本地配置，项目配置需提交）
+.idea/shelf/
+.idea/workspace.xml
+.idea/deploymentTargetSelector.xml
+.idea/deviceManager.xml
 *.iml
 *.iws
 *.ipr

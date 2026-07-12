@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  路径: app/src/main/res/layout/activity_chat.xml
-  用途: AI 影伴系统 — 独立聊天界面（患者/监护人共用）
-  功能: 文字输入 + 语音输入 + 消息气泡列表
--->
+<!-- Chat v2.0 — RecyclerView + 现代输入栏 + 离线状态 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -18,83 +14,94 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@color/surface"
-        android:elevation="2dp"
-        android:paddingStart="16dp" android:paddingEnd="16dp">
+        android:elevation="1dp"
+        android:paddingStart="8dp" android:paddingEnd="16dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_chat_back"
             android:layout_width="40dp" android:layout_height="40dp"
-            android:text="←" android:textSize="18sp"
-            app:cornerRadius="20dp" android:insetTop="0dp"
-            android:insetBottom="0dp" android:padding="0dp"
+            android:text="←" android:textSize="20sp"
+            android:contentDescription="返回"
+            app:cornerRadius="20dp"
+            android:insetTop="0dp" android:insetBottom="0dp" android:padding="0dp"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:textColor="@color/text_primary" />
 
         <TextView
             android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:text="💬 消息"
+            android:layout_weight="1" android:text="消息"
             android:textSize="18sp" android:textColor="@color/text_primary"
-            android:fontFamily="sans-serif-medium"
-            android:layout_marginStart="8dp" />
+            android:fontFamily="sans-serif-medium" android:layout_marginStart="4dp" />
 
         <TextView
             android:id="@+id/tv_chat_peer_name"
             android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="对方" android:textSize="13sp"
+            android:text="对方" android:textSize="12sp"
             android:textColor="@color/text_secondary" />
     </LinearLayout>
 
+    <!-- 离线提示条 -->
+    <TextView
+        android:id="@+id/tv_offline_banner"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="离线模式，对话功能不可用"
+        android:textSize="12sp" android:textColor="@color/text_secondary"
+        android:gravity="center" android:padding="8dp"
+        android:visibility="gone"
+        android:background="@color/status_disconnected_bg"
+        android:contentDescription="当前处于离线状态" />
+
     <!-- 消息列表 -->
-    <ScrollView
-        android:id="@+id/scroll_chat"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_chat_messages"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="10dp">
-
-        <LinearLayout
-            android:id="@+id/container_messages"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
+        android:clipToPadding="false"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="6dp"
+        android:contentDescription="消息列表" />
 
     <!-- 输入栏 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="8dp"
         android:gravity="center_vertical"
         android:background="@color/surface"
-        android:elevation="4dp">
+        android:elevation="2dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_voice_input"
             android:layout_width="44dp" android:layout_height="44dp"
             android:text="🎤" android:textSize="18sp"
+            android:contentDescription="语音输入"
             app:cornerRadius="22dp" android:insetTop="0dp"
             android:insetBottom="0dp" android:padding="0dp"
-            app:backgroundTint="@color/surface"
-            app:strokeColor="@color/text_secondary" app:strokeWidth="1dp" />
+            app:backgroundTint="@color/surface_variant"
+            app:strokeColor="@color/primary_container" app:strokeWidth="1dp" />
 
         <EditText
             android:id="@+id/et_chat_input"
             android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_weight="1" android:layout_marginHorizontal="8dp"
             android:hint="输入消息..."
             android:textSize="14sp" android:maxLines="4"
             android:inputType="textMultiLine"
+            android:contentDescription="消息输入框"
             android:background="@drawable/bg_chat_input"
-            android:padding="10dp" />
+            android:paddingHorizontal="16dp" android:paddingVertical="10dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_send_message"
             android:layout_width="44dp" android:layout_height="44dp"
-            android:text="→" android:textSize="18sp"
+            android:text="→" android:textSize="20sp"
+            android:contentDescription="发送消息"
             app:cornerRadius="22dp" android:insetTop="0dp"
             android:insetBottom="0dp" android:padding="0dp"
-            app:backgroundTint="@color/primary" />
+            app:backgroundTint="@color/primary"
+            android:textColor="@color/on_primary" />
     </LinearLayout>
 </LinearLayout>

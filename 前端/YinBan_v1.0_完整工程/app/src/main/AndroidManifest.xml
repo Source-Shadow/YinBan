@@ -20,6 +20,9 @@
     <!-- 音频输出（TTS 语音播报） -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
+    <!-- 振动反馈（SOS 按钮长按确认） -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:name=".YinBanApplication"
         android:allowBackup="true"
@@ -48,7 +51,13 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
-        <!-- ========== 患者端专属画面 ========== -->
+        <!-- ========== 主页容器（底部四栏导航） ========== -->
+        <activity
+            android:name=".ui.HomeActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize" />
+
+        <!-- ========== 患者端专属画面（保留兼容） ========== -->
         <activity
             android:name=".ui.PatientActivity"
             android:exported="false"

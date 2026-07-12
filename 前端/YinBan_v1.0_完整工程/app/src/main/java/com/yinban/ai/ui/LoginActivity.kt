@@ -72,6 +72,9 @@ class LoginActivity : AppCompatActivity() {
         // ── 步骤1: 确认身份 → 进入步骤2 ──
         binding.btnStep1Confirm.setOnClickListener { showStep(2) }
 
+        // ── 快速体验：跳过验证直接进入 ──
+        binding.btnSkipLogin.setOnClickListener { performDemoLogin() }
+
         // ── 步骤2: 下一步 → 进入步骤3 ──
         binding.btnStep2Next.setOnClickListener {
             if (validateStep2()) {
@@ -267,15 +270,40 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun navigateToRoleScreen() {
-        val target = when (selectedRole) {
-            "patient" -> PatientActivity::class.java
-            "guardian" -> GuardianActivity::class.java
-            else -> PatientActivity::class.java
+    override fun onBackPressed() {
+        if (currentStep > 1) {
+            showStep(currentStep - 1)
+        } else {
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("退出应用")
+                .setMessage("确定要退出 AI 影伴系统吗？")
+                .setPositiveButton("退出") { _, _ -> finish() }
+                .setNegativeButton("取消", null)
+                .show()
         }
-        startActivity(Intent(this, target).apply {
+    }
+
+    /** 快速体验：跳过验证，用演示账号直接进入 */
+    private fun performDemoLogin() {
+        val demoAccount = if (selectedRole == "patient") "demo_patient" else "demo_guardian"
+        val demoPassword = "demo123"
+        val demoRoom = "DEMO" + (100..999).random()
+        val demoServerIp = "192.168.1.1" // 不连接真实服务器，只测试 UI
+
+        prefManager.saveLoginInfo(demoAccount, demoPassword, demoRoom, selectedRole, demoServerIp)
+
+        Toast.makeText(this,
+            "⚡ 快速体验模式 · 角色: ${if (selectedRole == "patient") "患者端" else "监护人端"}",
+            Toast.LENGTH_SHORT).show()
+
+        navigateToRoleScreen()
+    }
+
+    private fun navigateToRoleScreen() {
+        startActivity(Intent(this, HomeActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         })
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         finish()
     }
 

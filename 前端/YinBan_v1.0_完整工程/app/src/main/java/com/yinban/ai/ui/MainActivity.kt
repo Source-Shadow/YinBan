@@ -35,28 +35,21 @@ class MainActivity : AppCompatActivity() {
                 navigateToRoleScreen(prefManager.role)
             } else {
                 startActivity(Intent(this, LoginActivity::class.java))
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             }
             finish()
         }, SPLASH_MIN_DURATION_MS)
     }
 
     /**
-     * 根据角色跳转到专属 Activity。
-     * 患者端和监护人端在后台通过同一个 Room 码配对，
-     * 但前端只显示当前角色对应的画面。
+     * 根据角色跳转到 HomeActivity（底部四栏导航）。
+     * 患者端和监护人端共用同一套导航架构，
+     * 但在"我的"Tab 中显示当前角色信息。
      */
     private fun navigateToRoleScreen(role: String) {
-        val targetActivity = when (role) {
-            "patient" -> PatientActivity::class.java
-            "guardian" -> GuardianActivity::class.java
-            else -> {
-                // 角色未知 → 回退登录页
-                LoginActivity::class.java
-            }
-        }
-
-        val intent = Intent(this, targetActivity)
+        val intent = Intent(this, HomeActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 }

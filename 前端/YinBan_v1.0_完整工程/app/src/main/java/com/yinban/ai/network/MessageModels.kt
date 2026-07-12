@@ -146,11 +146,39 @@ data class CallResponseData(
     @SerializedName("from_role") val fromRole: String = ""
 )
 
-// --- (n) Danger Alert 后台AI检测到危险自动触发 ---
+// --- (n) Join Room 加入房间请求 ---
+data class JoinRoomData(
+    @SerializedName("room") val room: String = "",
+    @SerializedName("role") val role: String = ""
+)
+
+// --- (o) Alert 预警通知（服务器 → 监护人） ---
+data class AlertData(
+    @SerializedName("type") val type: String = "",           // emotion | conflict | stagnation | environment | geofence | device
+    @SerializedName("severity") val severity: String = "",    // red | yellow | green
+    @SerializedName("message") val message: String = "",
+    @SerializedName("lat") val lat: Double = 0.0,
+    @SerializedName("lng") val lng: Double = 0.0
+)
+
+// --- (p) Danger Alert 后台AI检测到危险自动触发 ---
 data class DangerDetectedData(
-    @SerializedName("danger_type") val dangerType: String = "",   // "fall" | "unresponsive" | "abnormal_audio"
+    @SerializedName("danger_type") val dangerType: String = "",   // "fall" | "unresponsive" | "abnormal_audio" | "ai_detected"
     @SerializedName("confidence") val confidence: Float = 0f,
-    @SerializedName("message") val message: String = ""
+    @SerializedName("message") val message: String = "",
+    @SerializedName("patient_text") val patientText: String = ""
+)
+
+// --- (o) Chat AI Request ★ 影火AI 请求（患者 → 服务器） ---
+data class ChatAiRequestData(
+    @SerializedName("text") val text: String = "",
+    @SerializedName("context") val context: Map<String, String>? = null
+)
+
+// --- (p) Chat AI Response ★ 影火AI 回复（服务器 → 患者） ---
+data class ChatAiResponseData(
+    @SerializedName("reply") val reply: String = "",
+    @SerializedName("is_danger") val isDanger: Boolean = false
 )
 
 // ─────────────────────────────────────────────
@@ -170,7 +198,11 @@ object MessageType {
     const val MANUAL_MESSAGE = "manual_message"
     const val DEVICE_CONTROL_REQUEST = "device_control_request"
     const val SOS_ALERT = "sos_alert"
+    const val JOIN_ROOM = "join_room"
+    const val ALERT = "alert"
     const val DANGER_DETECTED = "danger_detected"
     const val CALL_REQUEST = "call_request"
     const val CALL_RESPONSE = "call_response"
+    const val CHAT_AI_REQUEST = "chat_ai_request"
+    const val CHAT_AI_RESPONSE = "chat_ai_response"
 }

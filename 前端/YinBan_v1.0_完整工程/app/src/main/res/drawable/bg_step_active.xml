@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 路径: app/src/main/res/drawable/bg_step_active.xml -->
+<!-- 步骤激活点 — 靛蓝实心圆 34dp -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
     <solid android:color="@color/primary" />
-    <size android:width="32dp" android:height="32dp" />
+    <size android:width="34dp" android:height="34dp" />
 </shape>

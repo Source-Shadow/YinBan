@@ -27,6 +27,9 @@ class PreferenceManager private constructor(context: Context) {
         private const val KEY_ROLE = "role"                    // "patient" | "guardian"
         private const val KEY_SERVER_IP = "server_ip"
         private const val KEY_PRIVACY_MODE = "privacy_mode"    // 患者端隐私模式
+        private const val KEY_NICKNAME = "nickname"           // 用户自定义昵称
+        private const val KEY_AVATAR_EMOJI = "avatar_emoji"  // 头像 emoji
+        private const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"  // 用户自己的 DeepSeek API Key
 
         @Volatile
         private var INSTANCE: PreferenceManager? = null
@@ -40,6 +43,9 @@ class PreferenceManager private constructor(context: Context) {
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+
+    /** 暴露 SharedPreferences 供 Fragment 直接读取开关状态 */
+    val sharedPrefs: SharedPreferences get() = prefs
 
     // ═══════════════════════════════════════════
     // 登录状态
@@ -77,6 +83,25 @@ class PreferenceManager private constructor(context: Context) {
     var isPrivacyMode: Boolean
         get() = prefs.getBoolean(KEY_PRIVACY_MODE, false)
         set(value) = prefs.edit { putBoolean(KEY_PRIVACY_MODE, value) }
+
+    // ═══════════════════════════════════════════
+    // 个人资料（昵称 + 头像 emoji）
+    // ═══════════════════════════════════════════
+
+    /** 用户自定义昵称，默认取 account 值 */
+    var nickname: String
+        get() = prefs.getString(KEY_NICKNAME, "") ?: ""
+        set(value) = prefs.edit { putString(KEY_NICKNAME, value) }
+
+    /** 头像 emoji，默认 🧑 */
+    var avatarEmoji: String
+        get() = prefs.getString(KEY_AVATAR_EMOJI, "") ?: ""
+        set(value) = prefs.edit { putString(KEY_AVATAR_EMOJI, value) }
+
+    /** DeepSeek API Key（用户自己的），空则使用内置 key */
+    var deepseekApiKey: String
+        get() = prefs.getString(KEY_DEEPSEEK_API_KEY, "") ?: ""
+        set(value) = prefs.edit { putString(KEY_DEEPSEEK_API_KEY, value) }
 
     // ═══════════════════════════════════════════
     // 便捷方法

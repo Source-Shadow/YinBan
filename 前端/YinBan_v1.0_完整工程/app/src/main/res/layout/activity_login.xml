@@ -266,6 +266,19 @@
                     android:textSize="16sp"
                     app:cornerRadius="12dp" />
 
+                <!-- 快速体验：跳过验证直接进入（仅用于测试UI） -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_skip_login"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="12dp"
+                    android:text="⚡ 快速体验（跳过验证）"
+                    android:textSize="13sp"
+                    android:textColor="@color/primary"
+                    android:contentDescription="跳过验证，使用演示账号快速体验"
+                    app:cornerRadius="12dp"
+                    style="@style/Widget.MaterialComponents.Button.TextButton" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 路径: app/src/main/res/drawable/bg_privacy_icon.xml -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval">
+<!-- 隐私图标背景 — 紫色圆形 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
     <solid android:color="@color/privacy_active" />
     <size android:width="64dp" android:height="64dp" />
 </shape>
