@@ -19,7 +19,7 @@ rooms: dict[str, dict[str, WebSocket]] = {}
 CST = timezone(timedelta(hours=8))
 
 # 推流地址 — 从环境变量读取，默认指向硬件同学 Flask MJPEG 服务
-MJPEG_STREAM_URL = os.getenv("MJPEG_STREAM_URL", "http://localhost:5000/video_feed")
+MJPEG_STREAM_URL = os.getenv("MJPEG_STREAM_URL", "http://192.168.137.83:5000/video_feed")
 
 
 def make_msg(msg_type: str, data: dict) -> dict:

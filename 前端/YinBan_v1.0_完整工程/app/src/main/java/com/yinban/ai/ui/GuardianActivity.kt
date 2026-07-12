@@ -248,28 +248,10 @@ class GuardianActivity : AppCompatActivity() {
     // ═══════════════════════════════════════════
 
     private fun loadMJPEG(url: String) {
-        val html = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="utf-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                    * { margin: 0; padding: 0; }
-                    html, body { width: 100%; height: 100%; background: #1A1A2E; overflow: hidden; }
-                    body { display: flex; align-items: center; justify-content: center; }
-                    img { width: 100%; height: 100%; object-fit: contain; display: block; }
-                </style>
-            </head>
-            <body>
-                <img src="$url" alt="MJPEG Stream" />
-            </body>
-            </html>
-        """.trimIndent()
-
         binding.webVideo.apply {
             visibility = View.VISIBLE
-            loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
+            stopLoading()
+            loadUrl(url)
         }
         binding.surfaceVideo.visibility = View.GONE
         binding.tvGuardianVideoPlaceholder.visibility = View.GONE
