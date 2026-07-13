@@ -90,15 +90,26 @@ class PreferenceManager private constructor(context: Context) {
     // 个人资料（昵称 + 头像 emoji）
     // ═══════════════════════════════════════════
 
-    /** 用户自定义昵称，默认取 account 值 */
+    /** 用户自定义昵称（按角色独立） */
     var nickname: String
-        get() = prefs.getString(KEY_NICKNAME, "") ?: ""
-        set(value) = prefs.edit { putString(KEY_NICKNAME, value) }
+        get() = prefs.getString(roleKey(KEY_NICKNAME), "") ?: ""
+        set(value) = prefs.edit { putString(roleKey(KEY_NICKNAME), value) }
 
-    /** 头像 emoji，默认 🧑 */
+    /** 头像 emoji（按角色独立），默认 🧑 */
     var avatarEmoji: String
-        get() = prefs.getString(KEY_AVATAR_EMOJI, "") ?: ""
-        set(value) = prefs.edit { putString(KEY_AVATAR_EMOJI, value) }
+        get() = prefs.getString(roleKey(KEY_AVATAR_EMOJI), "") ?: ""
+        set(value) = prefs.edit { putString(roleKey(KEY_AVATAR_EMOJI), value) }
+
+    /** 自定义头像图片路径（按角色独立），空表示未设置 */
+    var avatarPath: String
+        get() = prefs.getString(roleKey("avatar_path"), "") ?: ""
+        set(value) = prefs.edit { putString(roleKey("avatar_path"), value) }
+
+    /** 根据当前角色生成独立的 key，保证患者/监护人数据隔离 */
+    private fun roleKey(base: String): String {
+        val r = role
+        return if (r.isNotBlank()) "${base}_$r" else base
+    }
 
     /** DeepSeek API Key（用户自己的），空则使用内置 key */
     var deepseekApiKey: String

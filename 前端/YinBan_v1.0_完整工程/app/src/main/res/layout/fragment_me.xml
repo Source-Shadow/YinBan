@@ -28,18 +28,33 @@
                 android:gravity="center_vertical"
                 android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tv_avatar"
+                <FrameLayout
+                    android:id="@+id/avatar_container"
                     android:layout_width="68dp"
                     android:layout_height="68dp"
-                    android:text="🧑"
-                    android:textSize="34sp"
-                    android:gravity="center"
                     android:clickable="true"
                     android:focusable="true"
                     android:contentDescription="点击更换头像"
-                    android:background="@drawable/bg_step_active"
-                    android:backgroundTint="#156366F1" />
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/iv_avatar_photo"
+                        android:layout_width="68dp"
+                        android:layout_height="68dp"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"
+                        android:contentDescription="当前头像照片" />
+
+                    <TextView
+                        android:id="@+id/tv_avatar"
+                        android:layout_width="68dp"
+                        android:layout_height="68dp"
+                        android:text="🧑"
+                        android:textSize="34sp"
+                        android:gravity="center"
+                        android:background="@drawable/bg_step_active"
+                        android:backgroundTint="#156366F1" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:layout_width="0dp"
