@@ -46,6 +46,12 @@ class PatientActivity : AppCompatActivity(),
     private var isVideoOn = false
     private var isAudioOn = false
 
+    /** Snackbar 定位到顶部连接横幅下方，避免遮挡底部导航栏 */
+    private fun snackbar(msg: String, dur: Int = Snackbar.LENGTH_SHORT): Snackbar {
+        return Snackbar.make(binding.root, msg, dur)
+            .setAnchorView(R.id.fragment_container)
+    }
+
     // ── 定时器 ──
     private var connectedSeconds = 0L
     private var roomStatus: String = "disconnected"
@@ -60,13 +66,16 @@ class PatientActivity : AppCompatActivity(),
             val min = TimeUnit.SECONDS.toMinutes(connectedSeconds)
             val subtitle = if (min < 60) "已安全守护 $min 分钟"
             else "已安全守护 ${min / 60}小时${min % 60}分钟"
-            // 仅在 Fragment 存活时更新
-            homeFragment?.let { frag ->
-                if (frag.isAdded && !frag.isDetached) {
-                    frag.updateStandbyUI(HomeFragment.ConnectionState(standbySubtitle = subtitle))
-                }
-            }
+            pushStandbyToFragment(subtitle)
             timerHandler.postDelayed(this, 60_000)
+        }
+    }
+
+    private fun pushStandbyToFragment(subtitle: String) {
+        homeFragment?.let { frag ->
+            if (frag.isAdded && !frag.isDetached) {
+                frag.updateStandbyUI(HomeFragment.ConnectionState(standbySubtitle = subtitle))
+            }
         }
     }
 
@@ -133,7 +142,7 @@ class PatientActivity : AppCompatActivity(),
                 // 如果状态丢失，静默失败；其他异常通过 Snackbar 显示
                 val msg = e.message ?: "未知错误"
                 try {
-                    Snackbar.make(binding.root, "切换失败: $msg", Snackbar.LENGTH_LONG).show()
+                    snackbar("切换失败: $msg", Snackbar.LENGTH_LONG).show()
                 } catch (_: Exception) {
                     Toast.makeText(this@PatientActivity, "切换失败: $msg", Toast.LENGTH_LONG).show()
                 }
@@ -159,9 +168,7 @@ class PatientActivity : AppCompatActivity(),
     // ═══════════════════════════════════════════
 
     override fun onSosTriggered() {
-        // 长按由 HomeFragment 的 btnSos 点击触发实际逻辑
-        // SOS 长按逻辑在 HomeFragment 中通过 onTouchListener 实现
-        // 这里只处理确认后的回调
+        // 点击 SOS 按钮 → 弹出确认对话框
         showSosConfirmDialog()
     }
 
@@ -170,10 +177,10 @@ class PatientActivity : AppCompatActivity(),
         if (enabled) {
             hardwareStream.startVideoStream()
             wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("video"))
-            Snackbar.make(binding.root, "视频已开启，监护人可查看", Snackbar.LENGTH_SHORT).show()
+            snackbar("视频已开启，监护人可查看", Snackbar.LENGTH_SHORT).show()
         } else {
             hardwareStream.stopVideoStream()
-            Snackbar.make(binding.root, "视频已关闭", Snackbar.LENGTH_SHORT).show()
+            snackbar("视频已关闭", Snackbar.LENGTH_SHORT).show()
         }
     }
 
@@ -182,10 +189,10 @@ class PatientActivity : AppCompatActivity(),
         if (enabled) {
             hardwareStream.startAudioStream()
             wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("audio"))
-            Snackbar.make(binding.root, "音频已开启，监护人可听到", Snackbar.LENGTH_SHORT).show()
+            snackbar("音频已开启，监护人可听到", Snackbar.LENGTH_SHORT).show()
         } else {
             hardwareStream.stopAudioStream()
-            Snackbar.make(binding.root, "音频已关闭", Snackbar.LENGTH_SHORT).show()
+            snackbar("音频已关闭", Snackbar.LENGTH_SHORT).show()
         }
     }
 
@@ -202,14 +209,20 @@ class PatientActivity : AppCompatActivity(),
             "paired" -> "AI 影伴守护中"
             else -> "AI 影伴待命中"
         }
+        val subtitle = when {
+            roomStatus != "paired" -> "等待监护人连入"
+            connectedSeconds > 0 -> {
+                val min = TimeUnit.SECONDS.toMinutes(connectedSeconds)
+                if (min < 60) "已安全守护 $min 分钟"
+                else "已安全守护 ${min / 60}小时${min % 60}分钟"
+            }
+            else -> "已安全守护 0 分钟"
+        }
         return HomeFragment.ConnectionState(
             connected = wsManager.isConnected(),
             roomStatus = roomStatus,
             standbyTitle = title,
-            standbySubtitle = if (connectedSeconds > 0) {
-                val min = TimeUnit.SECONDS.toMinutes(connectedSeconds)
-                if (min < 60) "已安全守护 $min 分钟" else "已安全守护 ${min / 60}小时${min % 60}分钟"
-            } else "已安全守护 0 分钟"
+            standbySubtitle = subtitle
         )
     }
 
@@ -292,7 +305,7 @@ class PatientActivity : AppCompatActivity(),
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 try {
-                    Snackbar.make(binding.root, "连接失败: $error", Snackbar.LENGTH_LONG).show()
+                    snackbar("连接失败: $error", Snackbar.LENGTH_LONG).show()
                 } catch (_: Exception) {}
             }
         }
@@ -343,6 +356,8 @@ class PatientActivity : AppCompatActivity(),
                     connectedSeconds = 0
                     timerHandler.removeCallbacks(standbyTimer)
                     timerHandler.postDelayed(standbyTimer, 60_000)
+                    // 立即更新 UI：计时未满 1 分钟时显示计时中
+                    pushStandbyToFragment("已安全守护 0 分钟")
                 }
                 "waiting" -> {
                     updateConnectionBanner(true)
@@ -358,14 +373,14 @@ class PatientActivity : AppCompatActivity(),
         val data = gson.fromJson(gson.toJson(msg.data), AiVoiceCommandData::class.java)
         if (isTtsReady && tts != null)
             tts?.speak(data.voiceText, TextToSpeech.QUEUE_FLUSH, null, "ai_${System.currentTimeMillis()}")
-        runOnUiThread { Snackbar.make(binding.root, "🎙 ${data.voiceText}", Snackbar.LENGTH_SHORT).show() }
+        runOnUiThread { snackbar("🎙 ${data.voiceText}", Snackbar.LENGTH_SHORT).show() }
     }
 
     private fun handleDangerDetected(msg: YinBanMessage) {
         val data = gson.fromJson(gson.toJson(msg.data), DangerDetectedData::class.java)
         val shouldSos = data.confidence > 0.7f
         runOnUiThread {
-            Snackbar.make(binding.root, "⚠️ ${data.message}", Snackbar.LENGTH_LONG).show()
+            snackbar("⚠️ ${data.message}", Snackbar.LENGTH_LONG).show()
             if (shouldSos) triggerSos(isAutoDetected = true)
         }
     }
@@ -378,7 +393,7 @@ class PatientActivity : AppCompatActivity(),
                 guardianFragment?.refreshStatus()
             }
             try {
-                Snackbar.make(binding.root, "💬 监护人: ${data.content}", Snackbar.LENGTH_SHORT).show()
+                snackbar("💬 监护人: ${data.content}", Snackbar.LENGTH_SHORT).show()
             } catch (_: Exception) {}
         }
     }
@@ -387,7 +402,7 @@ class PatientActivity : AppCompatActivity(),
         val data = gson.fromJson(gson.toJson(msg.data), ChatAiResponseData::class.java)
         val shouldSos = data.isDanger
         runOnUiThread {
-            Snackbar.make(binding.root, "🤖 小影火: ${data.reply.take(60)}...", Snackbar.LENGTH_SHORT).show()
+            snackbar("🤖 小影火: ${data.reply.take(60)}...", Snackbar.LENGTH_SHORT).show()
             if (shouldSos) triggerSos(isAutoDetected = true)
         }
     }
@@ -418,13 +433,13 @@ class PatientActivity : AppCompatActivity(),
         latestLat = fuzzed.lat; latestLng = fuzzed.lng
         wsManager.sendMessage(MessageType.LOCATION_UPDATE,
             LocationUpdateData(fuzzed.lat, fuzzed.lng, if (fuzzed.isFuzzed) 1100f else 5f, isPrivacyMode, false))
-        Snackbar.make(binding.root, "📍 位置已上报${if (fuzzed.isFuzzed) "(隐私)" else ""}", Snackbar.LENGTH_SHORT).show()
+        snackbar("📍 位置已上报${if (fuzzed.isFuzzed) "(隐私)" else ""}", Snackbar.LENGTH_SHORT).show()
     }
 
     private fun sendDeviceStatus() {
         wsManager.sendMessage(MessageType.DEVICE_STATUS,
             DeviceStatusData(camera = isVideoOn, headphone = true, microphone = isAudioOn, battery = 85, networkType = "wifi"))
-        Snackbar.make(binding.root, "📱 设备状态已上报", Snackbar.LENGTH_SHORT).show()
+        snackbar("📱 设备状态已上报", Snackbar.LENGTH_SHORT).show()
     }
 
     private fun showSosConfirmDialog() {
@@ -433,7 +448,7 @@ class PatientActivity : AppCompatActivity(),
             .setMessage("即将向监护人发送紧急求助信号并共享你当前的精确位置。确定要继续吗？")
             .setPositiveButton("确定求助") { _, _ -> triggerSos() }
             .setNegativeButton("取消") { _, _ ->
-                Snackbar.make(binding.root, "已取消求助", Snackbar.LENGTH_SHORT).show()
+                snackbar("已取消求助", Snackbar.LENGTH_SHORT).show()
             }
             .show()
     }
@@ -451,12 +466,12 @@ class PatientActivity : AppCompatActivity(),
         wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("video"))
         isStreaming = true
         binding.root.announceForAccessibility("紧急求助已发送")
-        Snackbar.make(binding.root, "🆘 紧急求助已发送！监护人已收到警报", Snackbar.LENGTH_LONG).show()
+        snackbar("🆘 紧急求助已发送！监护人已收到警报", Snackbar.LENGTH_LONG).show()
     }
 
     private fun startCall(callType: String) {
         if (!wsManager.isConnected()) {
-            Snackbar.make(binding.root, "未连接", Snackbar.LENGTH_SHORT).show()
+            snackbar("未连接", Snackbar.LENGTH_SHORT).show()
             return
         }
         wsManager.sendMessage(MessageType.CALL_REQUEST, CallRequestData(callType, "patient"))

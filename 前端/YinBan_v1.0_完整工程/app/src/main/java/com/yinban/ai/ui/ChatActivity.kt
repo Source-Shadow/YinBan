@@ -18,6 +18,7 @@ import com.google.gson.Gson
 import com.yinban.ai.R
 import com.yinban.ai.databinding.ActivityChatBinding
 import com.yinban.ai.network.*
+import com.yinban.ai.storage.ChatHistoryItem
 import com.yinban.ai.storage.PreferenceManager
 import java.util.Locale
 
@@ -33,6 +34,7 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChatBinding
     private lateinit var adapter: ChatMessageAdapter
     private lateinit var layoutManager: LinearLayoutManager
+    private lateinit var prefManager: PreferenceManager
     private val wsManager = WebSocketManager.getInstance()
     private val gson = Gson()
     private var myRole = "patient"
@@ -40,6 +42,7 @@ class ChatActivity : AppCompatActivity() {
     private var isVoiceRecording = false
     private var tts: TextToSpeech? = null
     private var isTtsReady = false
+    private val historyItems = mutableListOf<ChatHistoryItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,8 +53,8 @@ class ChatActivity : AppCompatActivity() {
         chatMode = intent.getStringExtra(EXTRA_MODE) ?: "manual"
 
         // 从本地存储读取用户 API Key（优先用户自己的，否则用内置）
-        val prefs = PreferenceManager.getInstance(this)
-        val savedKey = prefs.deepseekApiKey
+        prefManager = PreferenceManager.getInstance(this)
+        val savedKey = prefManager.deepseekApiKey
         if (savedKey.isNotBlank()) {
             DeepSeekClient.apiKey = savedKey
         }
@@ -68,6 +71,9 @@ class ChatActivity : AppCompatActivity() {
             "ai" -> setupAiMode()
             else -> setupManualMode()
         }
+
+        // 加载本地聊天历史
+        loadHistory()
 
         binding.btnChatBack.setOnClickListener {
             finish()
@@ -94,7 +100,6 @@ class ChatActivity : AppCompatActivity() {
     private fun setupAiMode() {
         binding.tvChatPeerName.text = "🤖 在线"
         binding.tvChatPeerName.setTextColor(ContextCompat.getColor(this, R.color.status_online_text))
-        adapter.addMessage(ChatMessage.AiMessage("嗨嗨～我是小影火 🔥 你的温暖小伴。想说什么都可以跟我讲哦，我一直在这儿呢～"))
         initTts()
     }
 
@@ -182,6 +187,7 @@ class ChatActivity : AppCompatActivity() {
                 adapter.addMessage(
                     if (chatMode == "ai") ChatMessage.AiMessage(data.content)
                     else ChatMessage.PeerMessage(data.content))
+                saveHistory()
                 scrollToBottom()
             }
         }
@@ -192,6 +198,7 @@ class ChatActivity : AppCompatActivity() {
         runOnUiThread {
             adapter.removeThinkingIndicator()
             adapter.addMessage(ChatMessage.AiMessage(data.reply))
+            saveHistory()
             scrollToBottom()
             if (isTtsReady && tts != null) {
                 tts?.speak(data.reply, TextToSpeech.QUEUE_FLUSH, null, "ai_reply_${System.currentTimeMillis()}")
@@ -206,6 +213,7 @@ class ChatActivity : AppCompatActivity() {
         val data = gson.fromJson(gson.toJson(message.data), AiVoiceCommandData::class.java)
         runOnUiThread {
             adapter.addMessage(ChatMessage.AiMessage("🔔 ${data.voiceText}"))
+            saveHistory()
             scrollToBottom()
             if (isTtsReady && tts != null) {
                 tts?.speak(data.voiceText, TextToSpeech.QUEUE_FLUSH, null, "ai_voice_${System.currentTimeMillis()}")
@@ -246,6 +254,7 @@ class ChatActivity : AppCompatActivity() {
         adapter.addMessage(ChatMessage.SelfMessage(text))
         scrollToBottom()
         adapter.addMessage(ChatMessage.ThinkingIndicator())
+        saveHistory()
         scrollToBottom()
         binding.etChatInput.text.clear()
 
@@ -258,12 +267,16 @@ class ChatActivity : AppCompatActivity() {
             wsManager.sendMessage(MessageType.CHAT_AI_REQUEST,
                 ChatAiRequestData(text = text, context = context))
         } else {
-            // ★ 兜底路径：直连 DeepSeek API（无需启动后端也能用AI）
-            DeepSeekClient.chat(text, context) { result ->
-                if (isFinishing || isDestroyed) return@chat
-                adapter.removeThinkingIndicator()
-                adapter.addMessage(ChatMessage.AiMessage(result.reply))
-                scrollToBottom()
+            // ★ 兜底路径：直连 DeepSeek API，带对话历史让 AI 有记忆
+            val history = buildHistory()
+            DeepSeekClient.chatWithHistory(text, context, history) { result ->
+                if (isFinishing || isDestroyed) return@chatWithHistory
+                runOnUiThread {
+                    adapter.removeThinkingIndicator()
+                    adapter.addMessage(ChatMessage.AiMessage(result.reply))
+                    saveHistory()
+                    scrollToBottom()
+                }
                 if (isTtsReady && tts != null) {
                     tts?.speak(result.reply, TextToSpeech.QUEUE_FLUSH, null, "ai_fb_${System.currentTimeMillis()}")
                 }
@@ -277,6 +290,7 @@ class ChatActivity : AppCompatActivity() {
     private fun sendManualMessage(text: String) {
         wsManager.sendMessage(MessageType.MANUAL_MESSAGE, ManualMessageData(text, myRole))
         adapter.addMessage(ChatMessage.SelfMessage(text))
+        saveHistory()
         scrollToBottom()
         binding.etChatInput.text.clear()
     }
@@ -303,6 +317,7 @@ class ChatActivity : AppCompatActivity() {
                         val msg = "[语音消息]"
                         wsManager.sendMessage(MessageType.MANUAL_MESSAGE, ManualMessageData(msg, myRole))
                         adapter.addMessage(ChatMessage.SelfMessage(msg))
+                        saveHistory()
                         scrollToBottom()
                     }
                 }
@@ -318,6 +333,68 @@ class ChatActivity : AppCompatActivity() {
     }
 
     // ═══════════════════════════════════════════
+    // 聊天历史持久化
+    // ═══════════════════════════════════════════
+
+    /** 从 adapter 中提取对话历史，传给 DeepSeek API 让 AI 有记忆 */
+    private fun buildHistory(): List<DeepSeekClient.HistoryMsg> {
+        val result = mutableListOf<DeepSeekClient.HistoryMsg>()
+        for (i in 0 until adapter.itemCount) {
+            val msg = adapter.getMessage(i) ?: continue
+            when (msg) {
+                is ChatMessage.SelfMessage -> result.add(DeepSeekClient.HistoryMsg("user", msg.content))
+                is ChatMessage.AiMessage -> {
+                    // 跳过欢迎语和手动消息中的 AI 标记
+                    if (!msg.content.startsWith("嗨嗨～我是小影火") &&
+                        !msg.content.startsWith("🔔") &&
+                        !msg.content.startsWith("⚠️")) {
+                        result.add(DeepSeekClient.HistoryMsg("assistant", msg.content))
+                    }
+                }
+                is ChatMessage.PeerMessage -> result.add(DeepSeekClient.HistoryMsg("user", msg.content))
+                is ChatMessage.ThinkingIndicator -> {} // 跳过
+            }
+        }
+        return result
+    }
+
+    private fun saveHistory() {
+        historyItems.clear()
+        for (i in 0 until adapter.itemCount) {
+            val msg = adapter.getMessage(i) ?: continue
+            val item = when (msg) {
+                is ChatMessage.SelfMessage -> ChatHistoryItem("self", msg.content, msg.timestamp)
+                is ChatMessage.PeerMessage -> ChatHistoryItem("peer", msg.content, msg.timestamp)
+                is ChatMessage.AiMessage -> ChatHistoryItem("ai", msg.content, msg.timestamp)
+                is ChatMessage.ThinkingIndicator -> continue
+            }
+            historyItems.add(item)
+        }
+        prefManager.saveChatHistory(prefManager.room, "${myRole}_$chatMode", historyItems)
+    }
+
+    private fun loadHistory() {
+        val items = prefManager.loadChatHistory(prefManager.room, "${myRole}_$chatMode")
+        if (items.isEmpty()) {
+            // 首次 AI 聊天，显示欢迎语
+            if (chatMode == "ai") {
+                adapter.addMessage(ChatMessage.AiMessage("嗨嗨～我是小影火 🔥 你的温暖小伴。想说什么都可以跟我讲哦，我一直在这儿呢～"))
+            }
+            return
+        }
+        for (item in items) {
+            val msg = when (item.role) {
+                "self" -> ChatMessage.SelfMessage(item.content, item.timestamp)
+                "peer" -> ChatMessage.PeerMessage(item.content, item.timestamp)
+                "ai" -> ChatMessage.AiMessage(item.content, item.timestamp)
+                else -> continue
+            }
+            adapter.addMessage(msg)
+        }
+        scrollToBottom()
+    }
+
+    // ═══════════════════════════════════════════
     // 生命周期
     // ═══════════════════════════════════════════
 
@@ -328,6 +405,7 @@ class ChatActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        saveHistory()
         wsManager.removeMessageListener(msgListener)
         tts?.stop()
         tts?.shutdown()

@@ -49,12 +49,19 @@ class MeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val pm = PreferenceManager.getInstance(requireContext())
         val prefs = pm.sharedPrefs
+        val isGuardian = pm.isGuardian()
 
         // ── 个人信息 ──
         binding.tvProfileName.text = pm.nickname.ifEmpty { pm.account.ifEmpty { "未设置" } }
         binding.tvProfileAccount.text = "账号: " + pm.account.ifEmpty { "--" }
         binding.chipRole.text = if (pm.isPatient()) "患者" else "监护人"
         binding.tvAvatar.text = pm.avatarEmoji.ifEmpty { "🧑" }
+
+        // ── 监护人端隐藏不需要的卡片 ──
+        if (isGuardian) {
+            binding.cardPromptSettings.visibility = View.GONE
+            binding.cardAiSettings.visibility = View.GONE
+        }
 
         // ── 头像切换 ──
         binding.tvAvatar.setOnClickListener {
@@ -88,10 +95,6 @@ class MeFragment : Fragment() {
         // ── 开关 ──
         initSwitch(binding.switchVibration, prefs, "vibration_enabled", true)
         initSwitch(binding.switchVoice, prefs, "voice_enabled", true)
-        initSwitch(binding.switchAutoSos, prefs, "auto_sos_enabled", true)
-        initSwitch(binding.switchPrivacyMode, pm.isPrivacyMode) { checked ->
-            pm.isPrivacyMode = checked
-        }
 
         // ── API Key ──
         val apiKey = pm.deepseekApiKey

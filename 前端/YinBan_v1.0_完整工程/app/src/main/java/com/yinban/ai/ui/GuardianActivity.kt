@@ -24,7 +24,7 @@ import com.yinban.ai.databinding.ActivityGuardianBinding
 import com.yinban.ai.network.*
 import com.yinban.ai.storage.PreferenceManager
 
-class GuardianActivity : AppCompatActivity() {
+class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
 
     companion object {
         private const val TAG = "GuardianActivity"
@@ -37,6 +37,12 @@ class GuardianActivity : AppCompatActivity() {
 
     private var currentStreamUrl: String? = null
     private var roomStatus: String = "disconnected"
+    private var meFragment: MeFragment? = null
+
+    private fun snackbar(msg: String, dur: Int = Snackbar.LENGTH_SHORT): Snackbar {
+        return Snackbar.make(binding.root, msg, dur)
+            .setAnchorView(R.id.card_dashboard)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,8 +52,47 @@ class GuardianActivity : AppCompatActivity() {
         prefManager = PreferenceManager.getInstance(this)
         wsManager = WebSocketManager.getInstance()
 
+        setupBottomNav()
         initViews()
         connectWebSocket()
+    }
+
+    private fun setupBottomNav() {
+        binding.bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_guardian_home -> {
+                    // 移除"我的"Fragment，显示监护人主页内容
+                    supportFragmentManager.findFragmentByTag("me")?.let {
+                        supportFragmentManager.beginTransaction().remove(it).commitAllowingStateLoss()
+                    }
+                    binding.guardianMain.visibility = View.VISIBLE
+                    true
+                }
+                R.id.nav_me -> {
+                    // 隐藏监护人主页内容，显示"我的"
+                    binding.guardianMain.visibility = View.GONE
+                    val frag = meFragment ?: MeFragment.newInstance().also { meFragment = it }
+                    supportFragmentManager.beginTransaction()
+                        .replace(R.id.content_area, frag, "me")
+                        .commitAllowingStateLoss()
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // MeFragment.MeCallback
+    // ═══════════════════════════════════════════
+
+    override fun onLogout() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("退出登录")
+            .setMessage("确定要退出登录吗？退出后将断开与患者的连接。")
+            .setPositiveButton("确定退出") { _, _ -> logout() }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun initViews() {
@@ -56,7 +101,6 @@ class GuardianActivity : AppCompatActivity() {
         configureWebView()
 
         // 通话
-        binding.btnGuardianVideoCall.setOnClickListener { startCall("video") }
         binding.btnGuardianAudioCall.setOnClickListener { startCall("audio") }
 
         // SOS 面板
@@ -64,7 +108,7 @@ class GuardianActivity : AppCompatActivity() {
             currentStreamUrl?.let {
                 loadMJPEG(it)
                 Log.i(TAG, "[WebView] 查看 SOS 实时画面: $it")
-            } ?: Snackbar.make(binding.root, "暂无视频流地址", Snackbar.LENGTH_SHORT).show()
+            } ?: snackbar("暂无视频流地址", Snackbar.LENGTH_SHORT).show()
         }
         binding.btnSosDismiss.setOnClickListener {
             binding.cardSosAlert.visibility = View.GONE
@@ -80,15 +124,6 @@ class GuardianActivity : AppCompatActivity() {
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
         }
 
-        // 退出 → 二次确认
-        binding.btnGuardianLogout.setOnClickListener {
-            MaterialAlertDialogBuilder(this)
-                .setTitle("退出登录")
-                .setMessage("确定要退出登录吗？退出后将断开与患者的连接。")
-                .setPositiveButton("确定退出") { _, _ -> logout() }
-                .setNegativeButton("取消", null)
-                .show()
-        }
     }
 
     // ═══════════════════════════════════════════
@@ -164,7 +199,7 @@ class GuardianActivity : AppCompatActivity() {
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 try {
-                    Snackbar.make(binding.root, "连接错误: $error", Snackbar.LENGTH_LONG).show()
+                    snackbar("连接错误: $error", Snackbar.LENGTH_LONG).show()
                 } catch (_: Exception) {}
             }
         }
@@ -243,7 +278,7 @@ class GuardianActivity : AppCompatActivity() {
         val data = gson.fromJson(gson.toJson(msg.data), ManualMessageData::class.java)
         runOnUiThread {
             binding.tvPatientMessage.text = data.content
-            Snackbar.make(binding.root, "💬 患者: ${data.content}", Snackbar.LENGTH_LONG)
+            snackbar("💬 患者: ${data.content}", Snackbar.LENGTH_LONG)
                 .setAction("查看") {
                     startActivity(Intent(this@GuardianActivity, ChatActivity::class.java).apply {
                         putExtra(ChatActivity.EXTRA_ROLE, "guardian")
@@ -308,7 +343,7 @@ class GuardianActivity : AppCompatActivity() {
             }
 
             binding.root.announceForAccessibility("收到紧急求助！")
-            Snackbar.make(binding.root, "🚨 收到紧急求助！", Snackbar.LENGTH_LONG).show()
+            snackbar("🚨 收到紧急求助！", Snackbar.LENGTH_LONG).show()
         }
     }
 
@@ -349,7 +384,7 @@ class GuardianActivity : AppCompatActivity() {
             binding.cardSosAlert.visibility = View.VISIBLE
             binding.tvSosMessage.text = "🔥 小影火: ${data.message}"
             binding.tvSosLocation.text = "AI 自动检测"
-            Snackbar.make(binding.root, "⚠️ 小影火检测到潜在风险！", Snackbar.LENGTH_LONG).show()
+            snackbar("⚠️ 小影火检测到潜在风险！", Snackbar.LENGTH_LONG).show()
         }
     }
 
@@ -359,7 +394,7 @@ class GuardianActivity : AppCompatActivity() {
 
     private fun startCall(callType: String) {
         if (!wsManager.isConnected()) {
-            Snackbar.make(binding.root, "未连接", Snackbar.LENGTH_SHORT).show()
+            snackbar("未连接", Snackbar.LENGTH_SHORT).show()
             return
         }
         wsManager.sendMessage(MessageType.CALL_REQUEST, CallRequestData(callType, "guardian"))

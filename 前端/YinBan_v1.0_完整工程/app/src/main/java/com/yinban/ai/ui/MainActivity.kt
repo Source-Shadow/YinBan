@@ -47,7 +47,8 @@ class MainActivity : AppCompatActivity() {
      * 但在"我的"Tab 中显示当前角色信息。
      */
     private fun navigateToRoleScreen(role: String) {
-        val intent = Intent(this, HomeActivity::class.java)
+        val target = if (role == "patient") PatientActivity::class.java else GuardianActivity::class.java
+        val intent = Intent(this, target)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)

@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 监护人端 v2.0 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinator_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <!-- 顶部状态栏 -->
     <LinearLayout
+        android:id="@+id/banner_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
@@ -83,6 +89,20 @@
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <!-- ═══════ 内容区 (主页 / 我的 切换) ═══════ -->
+    <FrameLayout
+        android:id="@+id/content_area"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- 默认：监护人主页内容 -->
+        <LinearLayout
+            android:id="@+id/guardian_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
     <!-- 数据看板 -->
     <com.google.android.material.card.MaterialCardView
@@ -174,6 +194,12 @@
         </FrameLayout>
     </com.google.android.material.card.MaterialCardView>
 
+        </LinearLayout>
+        <!-- /guardian_main -->
+
+    </FrameLayout>
+    <!-- /content_area -->
+
     <!-- 控制按钮 -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -185,34 +211,31 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_guardian_go_chat"
             android:layout_width="0dp" android:layout_height="48dp"
-            android:layout_weight="1" android:layout_marginEnd="6dp"
+            android:layout_weight="1" android:layout_marginEnd="4dp"
             android:text="💬 消息" android:textSize="13sp"
-            app:cornerRadius="16dp" android:textColor="@color/primary"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_guardian_video_call"
-            android:layout_width="0dp" android:layout_height="48dp"
-            android:layout_weight="1" android:layout_marginHorizontal="4dp"
-            android:text="📹 视频通话" android:textSize="13sp"
             app:cornerRadius="16dp" android:textColor="@color/primary"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_guardian_audio_call"
             android:layout_width="0dp" android:layout_height="48dp"
-            android:layout_weight="1" android:layout_marginStart="6dp"
+            android:layout_weight="1" android:layout_marginStart="4dp"
             android:text="🎙️ 语音" android:textSize="13sp"
             app:cornerRadius="16dp" android:textColor="@color/primary"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_guardian_logout"
-        android:layout_width="match_parent" android:layout_height="44dp"
-        android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="退出登录" android:textSize="12sp"
-        android:textColor="@color/text_tertiary"
-        app:cornerRadius="16dp"
-        style="@style/Widget.MaterialComponents.Button.TextButton" />
+    <!-- ═══════ 底部导航 ═══════ -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        android:elevation="8dp"
+        app:menu="@menu/bottom_nav_guardian_menu"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/bottom_nav_icon_tint_selector"
+        app:itemTextColor="@color/bottom_nav_text_color_selector" />
 
-</LinearLayout>
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

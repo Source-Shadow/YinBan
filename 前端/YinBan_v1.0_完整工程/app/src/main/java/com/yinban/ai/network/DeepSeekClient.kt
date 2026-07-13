@@ -19,7 +19,7 @@ object DeepSeekClient {
     private const val API_URL = "https://api.deepseek.com/v1/chat/completions"
     private const val MODEL = "deepseek-chat"
     // 请替换为自己的 API Key: https://platform.deepseek.com/api_keys
-    const val DEFAULT_API_KEY = ""
+    const val DEFAULT_API_KEY = "sk-3edbbeafe3ca476a9bfe1c93d1970ae9"
 
     private val JSON_MEDIA = "application/json; charset=utf-8".toMediaType()
 
@@ -67,14 +67,28 @@ object DeepSeekClient {
 
     data class AiResult(val reply: String, val isDanger: Boolean)
 
+    /** 单条历史消息（用于传递对话上下文） */
+    data class HistoryMsg(val role: String, val content: String)  // role: "user" | "assistant"
+
+    /** 普通对话（无历史） */
     fun chat(
         userMessage: String,
         context: Map<String, String> = emptyMap(),
         callback: (AiResult) -> Unit
     ) {
+        chatWithHistory(userMessage, context, emptyList(), callback)
+    }
+
+    /** 带对话历史的对话 — AI 能记住之前聊了什么 */
+    fun chatWithHistory(
+        userMessage: String,
+        context: Map<String, String> = emptyMap(),
+        history: List<HistoryMsg>,
+        callback: (AiResult) -> Unit
+    ) {
         scope.launch {
             try {
-                val result = chatSync(userMessage, context)
+                val result = chatSyncWithHistory(userMessage, context, history)
                 withContext(Dispatchers.Main) { callback(result) }
             } catch (e: Exception) {
                 Log.e(TAG, "DeepSeek 调用失败: ${e.message}", e)
@@ -131,6 +145,10 @@ object DeepSeekClient {
     }
 
     private suspend fun chatSync(userMessage: String, context: Map<String, String>): AiResult {
+        return chatSyncWithHistory(userMessage, context, emptyList())
+    }
+
+    private suspend fun chatSyncWithHistory(userMessage: String, context: Map<String, String>, history: List<HistoryMsg>): AiResult {
         return withContext(Dispatchers.IO) {
             // 构建上下文
             val contextParts = mutableListOf<String>()
@@ -145,6 +163,15 @@ object DeepSeekClient {
                     put("role", "system")
                     put("content", SYSTEM_PROMPT + contextText)
                 })
+                // 插入对话历史（最多保留最近 20 轮 = 40 条）
+                val recentHistory = if (history.size > 40) history.takeLast(40) else history
+                for (h in recentHistory) {
+                    put(JSONObject().apply {
+                        put("role", h.role)
+                        put("content", h.content)
+                    })
+                }
+                // 当前用户消息
                 put(JSONObject().apply {
                     put("role", "user")
                     put("content", userMessage)

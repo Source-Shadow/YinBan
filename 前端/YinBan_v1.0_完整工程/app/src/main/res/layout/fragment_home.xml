@@ -126,10 +126,10 @@
             android:id="@+id/btn_sos"
             android:layout_width="match_parent" android:layout_height="60dp"
             android:layout_marginTop="14dp"
-            android:text="🆘  按住 2 秒紧急求助"
+            android:text="🆘  紧急求助"
             android:textSize="16sp" android:textColor="@color/on_primary"
             android:fontFamily="sans-serif-medium"
-            android:contentDescription="紧急求助按钮，长按2秒触发"
+            android:contentDescription="紧急求助按钮，点击即可触发"
             app:cornerRadius="18dp"
             app:backgroundTint="@color/sos_red" />
     </LinearLayout>

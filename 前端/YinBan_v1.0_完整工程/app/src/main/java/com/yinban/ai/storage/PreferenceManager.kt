@@ -31,6 +31,8 @@ class PreferenceManager private constructor(context: Context) {
         private const val KEY_AVATAR_EMOJI = "avatar_emoji"  // 头像 emoji
         private const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"  // 用户自己的 DeepSeek API Key
 
+            private const val KEY_CHAT_HISTORY_PREFIX = "chat_history_"
+
         @Volatile
         private var INSTANCE: PreferenceManager? = null
 
@@ -146,4 +148,37 @@ class PreferenceManager private constructor(context: Context) {
                 role.isNotBlank() &&
                 serverIp.isNotBlank()
     }
+
+    // ═══════════════════════════════════════════
+    // 聊天历史持久化
+    // ═══════════════════════════════════════════
+
+    fun saveChatHistory(room: String, role: String, messages: List<ChatHistoryItem>, maxMessages: Int = 200) {
+        val key = "$KEY_CHAT_HISTORY_PREFIX${room}_$role"
+        val gson = com.google.gson.Gson()
+        val toSave = if (messages.size > maxMessages) messages.takeLast(maxMessages) else messages
+        prefs.edit { putString(key, gson.toJson(toSave)) }
+    }
+
+    fun loadChatHistory(room: String, role: String): List<ChatHistoryItem> {
+        val key = "$KEY_CHAT_HISTORY_PREFIX${room}_$role"
+        val json = prefs.getString(key, null) ?: return emptyList()
+        return try {
+            val gson = com.google.gson.Gson()
+            val type = object : com.google.gson.reflect.TypeToken<List<ChatHistoryItem>>() {}.type
+            gson.fromJson(json, type) ?: emptyList()
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    fun clearChatHistory(room: String, role: String) {
+        prefs.edit { remove("$KEY_CHAT_HISTORY_PREFIX${room}_$role") }
+    }
 }
+
+data class ChatHistoryItem(
+    val role: String,
+    val content: String,
+    val timestamp: Long = System.currentTimeMillis()
+)

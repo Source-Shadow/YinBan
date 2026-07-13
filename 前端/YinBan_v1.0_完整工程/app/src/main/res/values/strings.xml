@@ -63,7 +63,7 @@
     <string name="home_disconnect">断开连接</string>
     <string name="home_status_waiting">🟡 等待配对</string>
     <string name="home_status_paired">🟢 已配对</string>
-    <string name="home_sos_button">🆘  一 键 求 助</string>
+    <string name="home_sos_button">🆘 紧急求助</string>
     <string name="home_device_status">📱 设备状态</string>
 
     <!-- 小影火 -->

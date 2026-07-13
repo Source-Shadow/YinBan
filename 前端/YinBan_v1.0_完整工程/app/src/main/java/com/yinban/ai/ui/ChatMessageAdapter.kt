@@ -14,9 +14,21 @@ sealed class ChatMessage(
     open val content: String,
     open val timestamp: Long = System.currentTimeMillis()
 ) {
-    data class SelfMessage(override val content: String) : ChatMessage(content)
-    data class PeerMessage(override val content: String) : ChatMessage(content)
-    data class AiMessage(override val content: String) : ChatMessage(content)
+    data class SelfMessage(
+        override val content: String,
+        override val timestamp: Long = System.currentTimeMillis()
+    ) : ChatMessage(content, timestamp)
+
+    data class PeerMessage(
+        override val content: String,
+        override val timestamp: Long = System.currentTimeMillis()
+    ) : ChatMessage(content, timestamp)
+
+    data class AiMessage(
+        override val content: String,
+        override val timestamp: Long = System.currentTimeMillis()
+    ) : ChatMessage(content, timestamp)
+
     data class ThinkingIndicator(
         override val content: String = "🔥 小影火正在思考…"
     ) : ChatMessage(content)
@@ -100,4 +112,6 @@ class ChatMessageAdapter(
         messages.clear()
         notifyItemRangeRemoved(0, count)
     }
+
+    fun getMessage(index: Int): ChatMessage? = messages.getOrNull(index)
 }
