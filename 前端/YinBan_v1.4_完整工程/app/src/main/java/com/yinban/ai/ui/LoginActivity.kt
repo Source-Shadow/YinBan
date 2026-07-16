@@ -19,6 +19,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.yinban.ai.BuildConfig
 import com.yinban.ai.R
 import com.yinban.ai.storage.PreferenceManager
@@ -36,6 +37,8 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.yb_color_background)
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true
 
         prefManager = PreferenceManager.getInstance(this)
 
@@ -118,15 +121,15 @@ class LoginActivity : AppCompatActivity() {
 
         // 患者端卡片高亮
         binding.cardRolePatient.apply {
-            strokeColor = ContextCompat.getColor(this@LoginActivity, if (isPatient) R.color.primary else R.color.text_secondary)
-            strokeWidth = if (isPatient) 4 else 1
+            strokeColor = ContextCompat.getColor(this@LoginActivity, if (isPatient) R.color.yb_color_primary else R.color.text_secondary)
+            strokeWidth = if (isPatient) resources.getDimensionPixelSize(R.dimen.yb_size_login_role_stroke_selected) else 1
         }
         binding.tvCheckPatient.visibility = if (isPatient) View.VISIBLE else View.INVISIBLE
 
         // 监护人端卡片高亮
         binding.cardRoleGuardian.apply {
-            strokeColor = ContextCompat.getColor(this@LoginActivity, if (!isPatient) R.color.primary else R.color.text_secondary)
-            strokeWidth = if (!isPatient) 4 else 1
+            strokeColor = ContextCompat.getColor(this@LoginActivity, if (!isPatient) R.color.yb_color_primary else R.color.text_secondary)
+            strokeWidth = if (!isPatient) resources.getDimensionPixelSize(R.dimen.yb_size_login_role_stroke_selected) else 1
         }
         binding.tvCheckGuardian.visibility = if (!isPatient) View.VISIBLE else View.INVISIBLE
     }
@@ -143,8 +146,8 @@ class LoginActivity : AppCompatActivity() {
         binding.btnStep2Back.visibility = View.GONE
         binding.groupStep3Buttons.visibility = View.GONE
 
-        val activeBg = R.drawable.bg_step_active
-        val inactiveBg = R.drawable.bg_step_inactive
+        val activeBg = R.drawable.yb_login_step_active
+        val inactiveBg = R.drawable.yb_login_step_inactive
 
         when (step) {
             1 -> {

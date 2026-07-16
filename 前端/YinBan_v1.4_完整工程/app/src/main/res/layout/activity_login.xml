@@ -10,509 +10,618 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="@color/background">
+    android:background="@color/yb_color_background"
+    android:clipToPadding="false"
+    android:fillViewport="true">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="24dp">
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/yb_spacing_page_horizontal"
+        android:paddingTop="40dp"
+        android:paddingEnd="@dimen/yb_spacing_page_horizontal"
+        android:paddingBottom="@dimen/yb_spacing_24">
 
-        <!-- ── 标题 ── -->
+        <ImageView
+            android:layout_width="84dp"
+            android:layout_height="84dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/app_name"
+            android:scaleType="fitCenter"
+            android:src="@drawable/yb_logo_xiaoyinghuo_happy" />
+
         <TextView
             android:id="@+id/tv_login_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/login_title"
-            android:textSize="32sp"
-            android:textColor="@color/primary"
+            android:layout_marginTop="@dimen/yb_spacing_12"
             android:fontFamily="sans-serif-medium"
-            android:layout_marginTop="48dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:gravity="center"
+            android:text="@string/login_title"
+            android:textColor="@color/yb_color_text_primary"
+            android:textSize="32sp" />
 
         <TextView
             android:id="@+id/tv_login_subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/yb_spacing_4"
+            android:gravity="center"
             android:text="@string/login_subtitle"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginTop="4dp"
-            app:layout_constraintTop_toBottomOf="@id/tv_login_title"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:textColor="@color/yb_color_text_secondary"
+            android:textSize="14sp" />
 
-        <!-- ── 步骤指示器 ── -->
         <LinearLayout
             android:id="@+id/step_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/yb_spacing_24"
             android:gravity="center"
-            app:layout_constraintTop_toBottomOf="@id/tv_login_subtitle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/tv_step1_dot"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:text="1"
-                android:textSize="12sp"
-                android:textColor="@color/text_on_dark"
+                android:background="@drawable/yb_login_step_active"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
-                android:background="@drawable/bg_step_active" />
+                android:text="1"
+                android:textColor="@color/text_on_dark"
+                android:textSize="12sp" />
 
-            <View android:layout_width="32dp" android:layout_height="2dp"
-                android:background="@color/primary_light" />
+            <View
+                android:layout_width="34dp"
+                android:layout_height="2dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="@dimen/yb_spacing_8"
+                android:background="@drawable/yb_login_step_connector" />
 
             <TextView
                 android:id="@+id/tv_step2_dot"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:text="2"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
+                android:background="@drawable/yb_login_step_inactive"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
-                android:background="@drawable/bg_step_inactive" />
+                android:text="2"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
 
-            <View android:layout_width="32dp" android:layout_height="2dp"
-                android:background="@color/primary_light" />
+            <View
+                android:layout_width="34dp"
+                android:layout_height="2dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginHorizontal="@dimen/yb_spacing_8"
+                android:background="@drawable/yb_login_step_connector" />
 
             <TextView
                 android:id="@+id/tv_step3_dot"
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:text="3"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
+                android:background="@drawable/yb_login_step_inactive"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
-                android:background="@drawable/bg_step_inactive" />
+                android:text="3"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- ═══════════ 步骤 1：身份角色选择 ═══════════ -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_step1"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="4dp"
-            app:layout_constraintTop_toBottomOf="@id/step_indicator"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:layout_marginTop="@dimen/yb_spacing_24"
+            app:cardBackgroundColor="@color/yb_color_surface"
+            app:cardCornerRadius="@dimen/yb_radius_large"
+            app:cardElevation="2dp"
+            app:cardUseCompatPadding="true"
+            app:strokeColor="@color/yb_color_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="28dp"
-                android:gravity="center">
+                android:padding="@dimen/yb_spacing_card_padding">
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="👤"
-                    android:textSize="48sp"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="请选择您的身份"
-                    android:textSize="20sp"
-                    android:textColor="@color/text_primary"
                     android:fontFamily="sans-serif-medium"
-                    android:layout_marginBottom="24dp" />
+                    android:gravity="center"
+                    android:text="请选择您的身份"
+                    android:textColor="@color/yb_color_text_primary"
+                    android:textSize="20sp" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_8"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp"
                     android:text="患者端和被监护端通过配对码连接使用"
-                    android:textSize="13sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginBottom="24dp" />
+                    android:textColor="@color/yb_color_text_secondary"
+                    android:textSize="13sp" />
 
-                <!-- 患者端卡片 -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_role_patient"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="2dp"
-                    app:strokeColor="@color/primary"
+                    android:layout_marginTop="@dimen/yb_spacing_20"
                     android:clickable="true"
                     android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground">
+                    android:foreground="?attr/selectableItemBackground"
+                    app:cardBackgroundColor="@color/yb_color_surface"
+                    app:cardCornerRadius="@dimen/yb_radius_large"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/yb_color_primary"
+                    app:strokeWidth="@dimen/yb_size_login_role_stroke_selected">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:minHeight="84dp"
                         android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
+                        android:padding="@dimen/yb_spacing_16">
 
-                        <TextView
+                        <FrameLayout
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:text="🏥"
-                            android:textSize="28sp"
-                            android:gravity="center" />
+                            android:background="@drawable/yb_login_icon_container">
+
+                            <ImageView
+                                android:layout_width="@dimen/yb_size_icon"
+                                android:layout_height="@dimen/yb_size_icon"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/yb_ic_role_patient" />
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/yb_spacing_12"
                             android:layout_weight="1"
-                            android:layout_marginStart="12dp"
                             android:orientation="vertical">
+
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-medium"
                                 android:text="患者端"
-                                android:textSize="18sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="sans-serif-medium" />
+                                android:textColor="@color/yb_color_text_primary"
+                                android:textSize="18sp" />
+
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/yb_spacing_4"
+                                android:lineSpacingExtra="2dp"
                                 android:text="被监护人使用 · 可接收AI语音提醒"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary" />
+                                android:textColor="@color/yb_color_text_secondary"
+                                android:textSize="12sp" />
                         </LinearLayout>
 
                         <TextView
                             android:id="@+id/tv_check_patient"
                             android:layout_width="28dp"
                             android:layout_height="28dp"
-                            android:text="✓"
-                            android:textSize="16sp"
-                            android:textColor="@color/primary"
+                            android:background="@drawable/yb_login_checkmark_bg"
+                            android:fontFamily="sans-serif-medium"
                             android:gravity="center"
+                            android:text="✓"
+                            android:textColor="@color/yb_color_primary"
+                            android:textSize="16sp"
                             android:visibility="visible" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- 监护人端卡片 -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_role_guardian"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="1dp"
-                    app:strokeColor="@color/text_secondary"
+                    android:layout_marginTop="@dimen/yb_spacing_12"
                     android:clickable="true"
                     android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground">
+                    android:foreground="?attr/selectableItemBackground"
+                    app:cardBackgroundColor="@color/yb_color_surface"
+                    app:cardCornerRadius="@dimen/yb_radius_large"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/text_secondary"
+                    app:strokeWidth="1dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:minHeight="84dp"
                         android:orientation="horizontal"
-                        android:padding="16dp"
-                        android:gravity="center_vertical">
+                        android:padding="@dimen/yb_spacing_16">
 
-                        <TextView
+                        <FrameLayout
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:text="👨‍👩‍👧"
-                            android:textSize="28sp"
-                            android:gravity="center" />
+                            android:background="@drawable/yb_login_icon_container">
+
+                            <ImageView
+                                android:layout_width="@dimen/yb_size_icon"
+                                android:layout_height="@dimen/yb_size_icon"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/yb_ic_role_guardian" />
+                        </FrameLayout>
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/yb_spacing_12"
                             android:layout_weight="1"
-                            android:layout_marginStart="12dp"
                             android:orientation="vertical">
+
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif-medium"
                                 android:text="监护人端"
-                                android:textSize="18sp"
-                                android:textColor="@color/text_primary"
-                                android:fontFamily="sans-serif-medium" />
+                                android:textColor="@color/yb_color_text_primary"
+                                android:textSize="18sp" />
+
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/yb_spacing_4"
+                                android:lineSpacingExtra="2dp"
                                 android:text="监护家人使用 · 查看位置和实时画面"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary" />
+                                android:textColor="@color/yb_color_text_secondary"
+                                android:textSize="12sp" />
                         </LinearLayout>
 
                         <TextView
                             android:id="@+id/tv_check_guardian"
                             android:layout_width="28dp"
                             android:layout_height="28dp"
-                            android:text="✓"
-                            android:textSize="16sp"
-                            android:textColor="@color/primary"
+                            android:background="@drawable/yb_login_checkmark_bg"
+                            android:fontFamily="sans-serif-medium"
                             android:gravity="center"
+                            android:text="✓"
+                            android:textColor="@color/yb_color_primary"
+                            android:textSize="16sp"
                             android:visibility="invisible" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_step1_confirm"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="24dp"
-                    android:text="确认身份，下一步 →"
-                    android:textSize="16sp"
-                    app:cornerRadius="12dp" />
-
-                <!-- 快速体验：跳过验证直接进入（仅用于测试UI） -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_skip_login"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="12dp"
-                    android:text="⚡ 快速体验（跳过验证）"
-                    android:textSize="13sp"
-                    android:textColor="@color/primary"
-                    android:contentDescription="跳过验证，使用演示账号快速体验"
-                    app:cornerRadius="12dp"
-                    style="@style/Widget.MaterialComponents.Button.TextButton" />
-
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ═══════════ 步骤 2：账号密码 ═══════════ -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_step1_confirm"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/yb_size_button_height"
+            android:layout_marginTop="@dimen/yb_spacing_12"
+            android:text="确认身份，下一步 →"
+            android:textColor="@color/yb_color_surface"
+            android:textSize="16sp"
+            app:backgroundTint="@color/yb_color_primary"
+            app:cornerRadius="@dimen/yb_radius_medium" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_skip_login"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="@dimen/yb_spacing_8"
+            android:contentDescription="跳过验证，使用演示账号快速体验"
+            android:text="快速体验（跳过验证）"
+            android:textColor="@color/yb_color_primary"
+            android:textSize="13sp"
+            app:cornerRadius="@dimen/yb_radius_medium"
+            app:icon="@drawable/yb_ic_login_quick"
+            app:iconGravity="textStart"
+            app:iconPadding="@dimen/yb_spacing_8"
+            app:iconTint="@color/yb_color_primary" />
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_step2"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="@dimen/yb_spacing_24"
             android:visibility="gone"
-            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/yb_color_surface"
+            app:cardCornerRadius="@dimen/yb_radius_large"
             app:cardElevation="2dp"
-            app:layout_constraintTop_toBottomOf="@id/step_indicator"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:cardUseCompatPadding="true"
+            app:strokeColor="@color/yb_color_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="@dimen/yb_spacing_card_padding">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="账号信息"
-                    android:textSize="18sp"
-                    android:textColor="@color/text_primary"
-                    android:fontFamily="sans-serif-medium"
-                    android:layout_marginBottom="4dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="登录您的 AI 影伴账号"
-                    android:textSize="13sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- 账号 -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/til_account"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="账号信息"
+                    android:textColor="@color/yb_color_text_primary"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_4"
+                    android:text="登录您的 AI 影伴账号"
+                    android:textColor="@color/yb_color_text_secondary"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_account"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_20"
                     android:hint="@string/login_account_hint"
-                    app:startIconDrawable="@drawable/ic_person"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    app:boxCornerRadiusBottomEnd="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusBottomStart="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusTopEnd="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusTopStart="@dimen/yb_radius_medium"
+                    app:boxStrokeColor="@color/yb_login_text_input_stroke"
+                    app:hintTextColor="@color/yb_login_hint_text"
+                    app:startIconDrawable="@drawable/yb_ic_login_account"
+                    app:startIconTint="@color/yb_color_text_secondary">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_account"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/yb_size_input_height"
+                        android:gravity="center_vertical"
                         android:inputType="text"
-                        android:maxLines="1" />
+                        android:maxLines="1"
+                        android:textColor="@color/yb_color_text_primary"
+                        android:textColorHint="@color/yb_color_text_secondary"
+                        android:textSize="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- 密码 -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_password"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/yb_spacing_12"
                     android:hint="@string/login_password_hint"
-                    app:startIconDrawable="@drawable/ic_lock"
+                    app:boxCornerRadiusBottomEnd="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusBottomStart="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusTopEnd="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusTopStart="@dimen/yb_radius_medium"
+                    app:boxStrokeColor="@color/yb_login_text_input_stroke"
                     app:endIconMode="password_toggle"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    app:endIconTint="@color/yb_color_text_secondary"
+                    app:hintTextColor="@color/yb_login_hint_text"
+                    app:startIconDrawable="@drawable/yb_ic_login_password"
+                    app:startIconTint="@color/yb_color_text_secondary">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_password"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/yb_size_input_height"
+                        android:gravity="center_vertical"
                         android:inputType="textPassword"
-                        android:maxLines="1" />
+                        android:maxLines="1"
+                        android:textColor="@color/yb_color_text_primary"
+                        android:textColorHint="@color/yb_color_text_secondary"
+                        android:textSize="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- 服务器 IP（仅 debug 可见） -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_server_ip"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="@dimen/yb_spacing_12"
                     android:hint="@string/login_server_ip_hint"
                     android:visibility="gone"
-                    app:startIconDrawable="@drawable/ic_server"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    app:boxCornerRadiusBottomEnd="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusBottomStart="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusTopEnd="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusTopStart="@dimen/yb_radius_medium"
+                    app:boxStrokeColor="@color/yb_login_text_input_stroke"
+                    app:hintTextColor="@color/yb_login_hint_text"
+                    app:startIconDrawable="@drawable/yb_ic_login_server"
+                    app:startIconTint="@color/yb_color_text_secondary">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_server_ip"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/yb_size_input_height"
+                        android:gravity="center_vertical"
                         android:inputType="text"
-                        android:maxLines="1" />
+                        android:maxLines="1"
+                        android:textColor="@color/yb_color_text_primary"
+                        android:textColorHint="@color/yb_color_text_secondary"
+                        android:textSize="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
-
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ═══════════ 步骤 3：配对码 ═══════════ -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_step2_next"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/yb_size_button_height"
+            android:layout_marginTop="@dimen/yb_spacing_12"
+            android:text="下一步 →"
+            android:textColor="@color/yb_color_surface"
+            android:textSize="15sp"
+            android:visibility="gone"
+            app:backgroundTint="@color/yb_color_primary"
+            app:cornerRadius="@dimen/yb_radius_medium" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_step2_back"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="@dimen/yb_spacing_8"
+            android:text="← 返回重新选择"
+            android:textColor="@color/yb_color_text_secondary"
+            android:textSize="13sp"
+            android:visibility="gone"
+            app:cornerRadius="@dimen/yb_radius_medium" />
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_step3"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="@dimen/yb_spacing_24"
             android:visibility="gone"
-            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/yb_color_surface"
+            app:cardCornerRadius="@dimen/yb_radius_large"
             app:cardElevation="2dp"
-            app:layout_constraintTop_toBottomOf="@id/step_indicator"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:cardUseCompatPadding="true"
+            app:strokeColor="@color/yb_color_border"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="@dimen/yb_spacing_card_padding">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="🔐 设备配对"
-                    android:textSize="18sp"
-                    android:textColor="@color/text_primary"
-                    android:fontFamily="sans-serif-medium"
-                    android:layout_marginBottom="4dp" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/yb_size_icon"
+                        android:layout_height="@dimen/yb_size_icon"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/yb_ic_login_pair"
+                        app:tint="@color/yb_color_primary" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/yb_spacing_8"
+                        android:layout_weight="1"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="设备配对"
+                        android:textColor="@color/yb_color_text_primary"
+                        android:textSize="20sp" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tv_pairing_hint"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="请输入和监护人端一样的配对码来建立连接"
-                    android:textSize="13sp"
-                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="@dimen/yb_spacing_8"
                     android:lineSpacingExtra="3dp"
-                    android:layout_marginBottom="16dp" />
+                    android:text="请输入和监护人端一样的配对码来建立连接"
+                    android:textColor="@color/yb_color_text_secondary"
+                    android:textSize="13sp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/til_room"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_20"
                     android:hint="配对码"
-                    app:startIconDrawable="@drawable/ic_room"
+                    app:boxCornerRadiusBottomEnd="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusBottomStart="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusTopEnd="@dimen/yb_radius_medium"
+                    app:boxCornerRadiusTopStart="@dimen/yb_radius_medium"
+                    app:boxStrokeColor="@color/yb_login_text_input_stroke"
                     app:counterEnabled="true"
                     app:counterMaxLength="6"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    app:hintTextColor="@color/yb_login_hint_text"
+                    app:startIconDrawable="@drawable/yb_ic_login_pair"
+                    app:startIconTint="@color/yb_color_text_secondary">
+
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/et_room"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="@dimen/yb_size_input_height"
+                        android:gravity="center_vertical"
                         android:inputType="text"
+                        android:maxLength="6"
                         android:maxLines="1"
-                        android:maxLength="6" />
+                        android:textColor="@color/yb_color_text_primary"
+                        android:textColorHint="@color/yb_color_text_secondary"
+                        android:textSize="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="⚠️ 双端输入相同配对码即可自动匹配连接"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary"
-                    android:layout_marginTop="8dp" />
+                    android:layout_marginTop="@dimen/yb_spacing_12"
+                    android:background="@drawable/yb_login_notice"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/yb_spacing_12"
+                    android:baselineAligned="false">
 
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/yb_ic_warning"
+                        app:tint="@color/yb_color_status_warning" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/yb_spacing_8"
+                        android:layout_weight="1"
+                        android:lineSpacingExtra="2dp"
+                        android:text="双端输入相同配对码即可自动匹配连接"
+                        android:textColor="@color/yb_color_text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ── 步骤2 按钮 ── -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_step2_next"
-            android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:text="下一步 →"
-            android:textSize="15sp"
-            android:layout_marginTop="16dp"
-            android:visibility="gone"
-            app:cornerRadius="12dp"
-            app:layout_constraintTop_toBottomOf="@id/card_step2"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_step2_back"
-            android:layout_width="0dp"
-            android:layout_height="44dp"
-            android:text="← 返回重新选择"
-            android:textSize="13sp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone"
-            app:cornerRadius="12dp"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            app:layout_constraintTop_toBottomOf="@id/btn_step2_next"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- ── 步骤3 按钮 ── -->
         <LinearLayout
             android:id="@+id/group_step3_buttons"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/yb_spacing_12"
             android:orientation="vertical"
-            android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/card_step3"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:visibility="gone">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_pair_enter"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="@dimen/yb_size_button_height"
                 android:text="配对并进入"
+                android:textColor="@color/yb_color_surface"
                 android:textSize="15sp"
-                app:cornerRadius="12dp" />
+                app:backgroundTint="@color/yb_color_primary"
+                app:cornerRadius="@dimen/yb_radius_medium" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_step3_back"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_marginTop="8dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="@dimen/yb_spacing_8"
                 android:text="← 返回修改信息"
+                android:textColor="@color/yb_color_text_secondary"
                 android:textSize="13sp"
-                app:cornerRadius="12dp"
-                style="@style/Widget.MaterialComponents.Button.TextButton" />
+                app:cornerRadius="@dimen/yb_radius_medium" />
         </LinearLayout>
 
-        <!-- ── 版本 ── -->
         <TextView
             android:id="@+id/tv_version"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/yb_spacing_24"
             android:text="v1.0.0 · AI 影伴系统"
-            android:textSize="12sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="24dp"
-            app:layout_constraintTop_toBottomOf="@id/group_step3_buttons"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:textColor="@color/yb_color_text_secondary"
+            android:textSize="12sp" />
+    </LinearLayout>
 </ScrollView>
