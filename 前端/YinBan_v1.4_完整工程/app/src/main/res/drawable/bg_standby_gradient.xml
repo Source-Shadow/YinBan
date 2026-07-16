@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 待机画面渐变：深靛 → 中靛 → 暖靛，135° -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:startColor="#FF312E81"
+        android:centerColor="#FF4338CA"
+        android:endColor="#FF6366F1"
+        android:angle="135"
+        android:type="linear" />
+    <corners android:radius="24dp" />
+</shape>

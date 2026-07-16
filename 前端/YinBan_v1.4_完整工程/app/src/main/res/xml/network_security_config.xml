@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  路径: app/src/main/res/xml/network_security_config.xml
+  用途: 允许本地局域网测试环境的 HTTP/WS 明文传输，确保前后端联调顺利
+-->
+<network-security-config>
+    <!-- 默认：生产环境仅允许 HTTPS 加密流量 -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- 开发 / 联调：允许局域网内 HTTP/WS 明文传输 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- 本地回环 -->
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <!-- 局域网私有地址段 -->
+        <domain includeSubdomains="true">192.168.0.0</domain>
+        <domain includeSubdomains="true">10.0.0.0</domain>
+        <domain includeSubdomains="true">172.16.0.0</domain>
+        <!-- 开发设备常用地址 -->
+        <domain includeSubdomains="false">0.0.0.0</domain>
+    </domain-config>
+</network-security-config>

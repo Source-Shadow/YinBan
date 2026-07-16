@@ -1,0 +1,32 @@
+# ============================================================
+# AI 影伴系统 (YinBan) — Git 忽略规则
+# ============================================================
+
+# Android / Gradle
+.gradle/
+build/
+app/build/
+*.apk
+*.aab
+*.dex
+*.class
+local.properties
+
+# IDE（仅忽略用户本地配置，项目配置需提交）
+.idea/shelf/
+.idea/workspace.xml
+.idea/deploymentTargetSelector.xml
+.idea/deviceManager.xml
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.keystore
+*.jks
+google-services.json

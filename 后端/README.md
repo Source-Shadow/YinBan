@@ -63,6 +63,37 @@ ws://<服务器IP>:8000/ws?room=<房间号>&role=<patient|guardian>
 
 详细字段定义见 `接口对接单.md`。
 
+## 摄像头视觉服务（main_visual_service.py）
+
+独立的 AI 视觉服务，运行在带摄像头的硬件设备上（如 PC/边缘设备）：
+
+```bash
+# 安装完整依赖
+pip install -r requirements.txt
+
+# 启动视觉服务（默认连接本地服务器）
+python main_visual_service.py
+```
+
+**环境变量**：
+
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `DEEPSEEK_API_KEY` | 内置测试 Key | DeepSeek API 密钥 |
+| `SERVER_HOST` | `127.0.0.1` | WebSocket 服务器 IP |
+| `SERVER_PORT` | `8000` | WebSocket 服务器端口 |
+| `ROOM_ID` | `1234` | 房间号 |
+
+**功能**：
+- 📸 摄像头采集 + YOLOv8 实时目标检测
+- 🧠 DeepSeek AI 场景分析（每4秒）
+- 📺 MJPEG 视频流（`http://<IP>:5000/video_feed`），监护人端 WebView 加载
+- 🎤 麦克风音频采集与推流
+- 🔗 WebSocket 连接服务器（role=device），接收摄像头启停指令
+
+**架构角色**：`main_visual_service.py` 以 `role=device` 连接服务器。
+房间内支持三种角色：`patient`、`guardian`、`device`。device 不参与配对逻辑，专门处理摄像头/麦克风控制。
+
 ## 房间管理
 
 - 房间在内存中管理，重启服务器后清空

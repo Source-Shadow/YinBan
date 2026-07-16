@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 底部导航菜单 — 4 个栏目 -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_home"
+        android:title="主页" />
+    <item
+        android:id="@+id/nav_chatai"
+        android:icon="@drawable/ic_fire"
+        android:title="小影火" />
+    <item
+        android:id="@+id/nav_guardian"
+        android:icon="@drawable/ic_guardian"
+        android:title="监护栏" />
+    <item
+        android:id="@+id/nav_me"
+        android:icon="@drawable/ic_person"
+        android:title="我的" />
+</menu>

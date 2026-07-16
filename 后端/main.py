@@ -16,11 +16,14 @@ app = FastAPI()
 # 房间管理：{"房间号": {"patient": WebSocket, "guardian": WebSocket}}
 rooms: dict[str, dict[str, WebSocket]] = {}
 
+# 每个房间的推流地址（由患者端/设备端上报，动态获取）
+room_stream_urls: dict[str, str] = {}
+
 # 中国时区
 CST = timezone(timedelta(hours=8))
 
 # 推流地址 — 从环境变量读取，默认指向硬件同学 Flask MJPEG 服务
-MJPEG_STREAM_URL = os.getenv("MJPEG_STREAM_URL", "http://192.168.137.83:5000/video_feed")
+MJPEG_STREAM_URL = os.getenv("MJPEG_STREAM_URL", "http://10.240.11.161:5000/video_feed")
 
 # DeepSeek V4 API 配置
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
@@ -62,8 +65,17 @@ async def send_to_role(room_id: str, target_role: str, msg: dict):
 
 
 def get_other_role(role: str) -> str:
-    """获取对方角色"""
+    """获取对方角色（仅适用于 patient/guardian 互查）"""
     return "guardian" if role == "patient" else "patient"
+
+
+def get_human_counterpart(role: str) -> str | None:
+    """获取人类对端角色。device 无人类对端。"""
+    if role == "patient":
+        return "guardian"
+    elif role == "guardian":
+        return "patient"
+    return None
 
 
 # ═══════════════════════════════════════════
@@ -199,9 +211,9 @@ async def handle_websocket(
     await websocket.accept()
 
     # --- 角色校验 ---
-    if role not in ("patient", "guardian"):
+    if role not in ("patient", "guardian", "device"):
         await websocket.send_json(make_msg("error", {
-            "message": f"无效角色: {role}，只能是 patient 或 guardian"
+            "message": f"无效角色: {role}，只能是 patient、guardian 或 device"
         }))
         await websocket.close()
         return
@@ -211,29 +223,38 @@ async def handle_websocket(
         rooms[room] = {}
     rooms[room][role] = websocket
 
-    other_role = get_other_role(role)
-    paired = other_role in rooms[room]
+    counterpart = get_human_counterpart(role)
+    is_human = counterpart is not None
+    paired = is_human and counterpart in rooms[room]
 
-    # 通知自己
-    await websocket.send_json(make_msg("room_status", {
-        "room": room,
-        "status": "paired" if paired else "waiting",
-        "your_role": role,
-        "peer_role": other_role if paired else None,
-        "other_user": "已连接" if paired else "等待中..."
-    }))
-
-    # 通知对方有人加入
-    if paired:
-        await rooms[room][other_role].send_json(make_msg("room_status", {
+    # 人类角色：通知房间状态（配对/等待）
+    if is_human:
+        await websocket.send_json(make_msg("room_status", {
             "room": room,
-            "status": "paired",
-            "your_role": other_role,
-            "peer_role": role,
-            "other_user": "已连接"
+            "status": "paired" if paired else "waiting",
+            "your_role": role,
+            "peer_role": counterpart if paired else None,
+            "other_user": "已连接" if paired else "等待中..."
         }))
 
-    print(f"[房间 {room}] {role} 已连接 | 当前房间数: {len(rooms)}")
+        # 通知人类对端有人加入
+        if paired:
+            await rooms[room][counterpart].send_json(make_msg("room_status", {
+                "room": room,
+                "status": "paired",
+                "your_role": counterpart,
+                "peer_role": role,
+                "other_user": "已连接"
+            }))
+    else:
+        # device 角色：简单确认连接，不参与配对逻辑
+        await websocket.send_json(make_msg("device_status_ack", {
+            "room": room,
+            "status": "connected",
+            "message": "设备已注册到房间"
+        }))
+
+    print(f"[房间 {room}] {role} 已连接 | 当前房间数: {len(rooms)} 角色: {list(rooms[room].keys())}")
 
     # --- 消息循环 ---
     try:
@@ -249,26 +270,83 @@ async def handle_websocket(
             # ====== 直接转发（⚡ 原封不动转发给房间里另一个人） ======
             elif msg_type in (
                 "location_update", "device_status",
-                "manual_message", "device_control_request",
+                "manual_message",
                 "call_request", "call_response",
                 "ai_voice_command", "danger_detected",
+                "camera_status", "stream_status",
             ):
                 await forward_to_other(room, role, msg)
+
+            # ====== 设备控制请求（路由到 device 角色或人类对端） ======
+            elif msg_type == "device_control_request":
+                data = msg.get("data", {})
+                target_device = data.get("device", "")
+                # 摄像头/麦克风控制 → 路由到 device 角色
+                if target_device in ("camera", "microphone") and "device" in rooms.get(room, {}):
+                    await send_to_role(room, "device", msg)
+                    print(f"[房间 {room}] 设备控制 → device: {target_device} {data.get('action')}")
+                else:
+                    # 其他设备控制 → 转发给人类对端
+                    await forward_to_other(room, role, msg)
 
             # ====== 视频推流 ======
             elif msg_type == "stream_start":
                 stream_type = msg.get("data", {}).get("stream_type", "video")
-                await forward_to_other(room, role, make_msg("stream_url", {
-                    "url": MJPEG_STREAM_URL,
+                # ★ 优先使用患者端上报的推流地址，否则 fallback 到环境变量
+                stream_url = msg.get("data", {}).get("stream_url", "") or MJPEG_STREAM_URL
+                room_stream_urls[room] = stream_url
+                print(f"[房间 {room}] 推流地址已更新: {stream_url}")
+                # 通知 device 角色启动摄像头/麦克风
+                if "device" in rooms.get(room, {}):
+                    await send_to_role(room, "device", make_msg("device_control_request", {
+                        "device": "camera" if stream_type == "video" else "microphone",
+                        "action": "on",
+                        "from_role": role
+                    }))
+                # 通知监护人推流地址
+                if "guardian" in rooms.get(room, {}):
+                    await send_to_role(room, "guardian", make_msg("stream_status", {
+                        "url": stream_url,
+                        "stream_type": stream_type,
+                        "status": "live"
+                    }))
+                # 回执给发送者
+                await websocket.send_json(make_msg("stream_status", {
+                    "url": stream_url,
                     "stream_type": stream_type,
                     "status": "live"
+                }))
+
+            # ====== 停止推流 ======
+            elif msg_type == "stream_stop":
+                stream_type = msg.get("data", {}).get("stream_type", "video")
+                # 通知 device 角色停止摄像头/麦克风
+                if "device" in rooms.get(room, {}):
+                    await send_to_role(room, "device", make_msg("device_control_request", {
+                        "device": "camera" if stream_type == "video" else "microphone",
+                        "action": "off",
+                        "from_role": role
+                    }))
+                # 通知监护人推流已停止
+                if "guardian" in rooms.get(room, {}):
+                    await send_to_role(room, "guardian", make_msg("stream_status", {
+                        "url": "",
+                        "stream_type": stream_type,
+                        "status": "stopped"
+                    }))
+                # 回执给发送者
+                await websocket.send_json(make_msg("stream_status", {
+                    "url": "",
+                    "stream_type": stream_type,
+                    "status": "stopped"
                 }))
 
             # ====== SOS 告警 ======
             elif msg_type == "sos_alert":
                 data = dict(msg.get("data", {}))
                 if not data.get("stream_url"):
-                    data["stream_url"] = MJPEG_STREAM_URL
+                    # 优先使用房间已上报的推流地址，否则 fallback
+                    data["stream_url"] = room_stream_urls.get(room, MJPEG_STREAM_URL)
                 forwarded = dict(msg)
                 forwarded["data"] = data
                 await forward_to_other(room, role, forwarded)
@@ -311,19 +389,22 @@ async def handle_websocket(
             rooms[room].pop(role, None)
             if not rooms[room]:
                 del rooms[room]
+                room_stream_urls.pop(room, None)  # 清理推流地址
 
-        # 通知对方（动态检查配对状态）
-        if room in rooms and get_other_role(role) in rooms[room]:
-            try:
-                await rooms[room][other_role].send_json(make_msg("room_status", {
-                    "room": room,
-                    "status": "waiting",
-                    "your_role": other_role,
-                    "peer_role": None,
-                    "other_user": "对方已断开"
-                }))
-            except Exception:
-                pass
+        # 人类角色断开时通知人类对端
+        if role in ("patient", "guardian"):
+            counterpart = "guardian" if role == "patient" else "patient"
+            if room in rooms and counterpart in rooms[room]:
+                try:
+                    await rooms[room][counterpart].send_json(make_msg("room_status", {
+                        "room": room,
+                        "status": "waiting",
+                        "your_role": counterpart,
+                        "peer_role": None,
+                        "other_user": "对方已断开"
+                    }))
+                except Exception:
+                    pass
 
 
 # ═══════════════════════════════════════════

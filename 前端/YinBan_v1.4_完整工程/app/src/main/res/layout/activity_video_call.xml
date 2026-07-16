@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  路径: app/src/main/res/layout/activity_video_call.xml
+  用途: AI 影伴系统 v1.0 — 音视频通话界面
+  结构:
+    1. 对方画面（全屏背景）
+    2. 自己画面（小窗 PIP）
+    3. 通话控制栏（挂断/静音/切换摄像头）
+-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF1A1A2E">
+
+    <!-- 对方大画面 -->
+    <SurfaceView
+        android:id="@+id/surface_remote"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- MJPEG 视频流 ImageView（替代 WebView 用于实时画面） -->
+    <ImageView
+        android:id="@+id/iv_video_stream"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:scaleType="centerCrop"
+        android:contentDescription="视频画面"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 通话中提示（SurfaceView 不可用时显示） -->
+    <TextView
+        android:id="@+id/tv_call_placeholder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="📹 正在连接..."
+        android:textSize="18sp"
+        android:textColor="@color/text_on_dark"
+        android:alpha="0.6"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 自己画面小窗 -->
+    <SurfaceView
+        android:id="@+id/surface_local"
+        android:layout_width="120dp"
+        android:layout_height="170dp"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="12dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 通话时长 -->
+    <TextView
+        android:id="@+id/tv_call_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:textSize="16sp"
+        android:textColor="@color/text_on_dark"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/surface_local"
+        app:layout_constraintEnd_toEndOf="@id/surface_local"
+        app:layout_constraintStart_toStartOf="@id/surface_local" />
+
+    <!-- 底部控制栏 -->
+    <LinearLayout
+        android:id="@+id/bar_call_controls"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 静音 -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_mute"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:contentDescription="静音"
+            app:backgroundTint="@color/text_secondary"
+            app:srcCompat="@drawable/ic_mic"
+            app:tint="@color/text_on_dark"
+            app:fabSize="normal" />
+
+        <!-- 挂断 -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_hangup"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginEnd="40dp"
+            android:contentDescription="挂断"
+            app:backgroundTint="@color/error"
+            app:srcCompat="@drawable/ic_call_end"
+            app:tint="@color/text_on_dark"
+            app:fabSize="normal" />
+
+        <!-- 切换摄像头 -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_switch_camera"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:contentDescription="切换摄像头"
+            app:backgroundTint="@color/text_secondary"
+            app:srcCompat="@drawable/ic_switch_camera"
+            app:tint="@color/text_on_dark"
+            app:fabSize="normal" />
+
+    </LinearLayout>
+
+    <!-- 通话状态 -->
+    <TextView
+        android:id="@+id/tv_call_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="呼叫中..."
+        android:textSize="14sp"
+        android:textColor="@color/text_on_dark"
+        android:alpha="0.7"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@id/bar_call_controls"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

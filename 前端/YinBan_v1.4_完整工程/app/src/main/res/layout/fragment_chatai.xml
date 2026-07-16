@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 影火AI Fragment v2.0 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@color/background"
+    android:padding="32dp">
+
+    <!-- glow circle -->
+    <View android:layout_width="96dp" android:layout_height="96dp"
+        android:background="@drawable/bg_step_active"
+        android:backgroundTint="#206366F1"
+        android:alpha="0.5" />
+
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:text="🔥"
+        android:textSize="52sp" android:layout_marginTop="-80dp"
+        android:layout_marginBottom="20dp" />
+
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="小影火" android:textSize="28sp"
+        android:textColor="@color/text_primary"
+        android:fontFamily="sans-serif-medium"
+        android:layout_marginBottom="6dp" />
+
+    <TextView android:id="@+id/tv_ai_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🟢 小影火 在线" android:textSize="13sp"
+        android:textColor="@color/status_online_text"
+        android:layout_marginBottom="20dp" />
+
+    <TextView android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="你好呀～我是小影火 🔥\n你的温暖陪伴伙伴，随时在这儿陪着你。"
+        android:textSize="15sp" android:textColor="@color/text_secondary"
+        android:gravity="center" android:lineSpacingExtra="6dp"
+        android:layout_marginBottom="36dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_start_chat"
+        android:layout_width="match_parent" android:layout_height="56dp"
+        android:text="💬  开始对话"
+        android:textSize="16sp" android:textColor="@color/on_primary"
+        android:contentDescription="开始与影火AI对话"
+        app:cornerRadius="18dp" app:backgroundTint="@color/primary" />
+
+</LinearLayout>

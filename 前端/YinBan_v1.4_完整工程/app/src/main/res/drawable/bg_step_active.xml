@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 步骤激活点 — 靛蓝实心圆 34dp -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/primary" />
+    <size android:width="34dp" android:height="34dp" />
+</shape>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  路径: app/src/main/AndroidManifest.xml
+  用途: AI 影伴系统 (YinBan) v1.0 — 应用清单声明
+  包含: 网络权限、安全配置、Activity 注册
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.yinban.ai">
+
+    <!-- ==================== 网络权限 ==================== -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- 前台服务权限（用于 WebSocket 长连接保活） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+    <!-- 音频输出（TTS 语音播报） -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <!-- 振动反馈（SOS 按钮长按确认） -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:name=".YinBanApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.YinBan"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="true"
+        tools:targetApi="34">
+
+        <!-- ========== 入口 Activity（启动分流） ========== -->
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.YinBan.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ========== 登录 / 注册 ========== -->
+        <activity
+            android:name=".ui.LoginActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- ========== 主页容器（底部四栏导航） ========== -->
+        <activity
+            android:name=".ui.HomeActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize" />
+
+        <!-- ========== 患者端专属画面（保留兼容） ========== -->
+        <activity
+            android:name=".ui.PatientActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize" />
+
+        <!-- ========== 监护人端专属画面 ========== -->
+        <activity
+            android:name=".ui.GuardianActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize" />
+
+        <!-- ========== 消息聊天画面 ========== -->
+        <activity
+            android:name=".ui.ChatActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- ========== 视频 / 音频通话画面 ========== -->
+        <activity
+            android:name=".ui.VideoCallActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/Theme.YinBan.Fullscreen" />
+
+    </application>
+</manifest>
