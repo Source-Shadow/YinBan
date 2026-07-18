@@ -60,4 +60,36 @@
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textColor">@color/yb_color_text_primary</item>
     </style>
+
+    <style name="Yb.Night.Text.Display" parent="Yb.Text.Display">
+        <item name="android:textColor">@color/yb_color_night_text_primary</item>
+    </style>
+
+    <style name="Yb.Night.Text.PageTitle" parent="Yb.Text.PageTitle">
+        <item name="android:textColor">@color/yb_color_night_text_primary</item>
+    </style>
+
+    <style name="Yb.Night.Text.SectionTitle" parent="Yb.Text.SectionTitle">
+        <item name="android:textColor">@color/yb_color_night_text_primary</item>
+    </style>
+
+    <style name="Yb.Night.Text.Body" parent="Yb.Text.Body">
+        <item name="android:textColor">@color/yb_color_night_text_primary</item>
+    </style>
+
+    <style name="Yb.Night.Text.BodySecondary" parent="Yb.Text.BodySecondary">
+        <item name="android:textColor">@color/yb_color_night_text_secondary</item>
+    </style>
+
+    <style name="Yb.Night.Text.Status" parent="Yb.Text.Status">
+        <item name="android:textColor">@color/yb_color_night_text_secondary</item>
+    </style>
+
+    <style name="Yb.Night.Text.Button" parent="Yb.Text.Button">
+        <item name="android:textColor">@color/yb_color_night_text_primary</item>
+    </style>
+
+    <style name="Yb.Night.Text.Data" parent="Yb.Text.Data">
+        <item name="android:textColor">@color/yb_color_night_text_primary</item>
+    </style>
 </resources>

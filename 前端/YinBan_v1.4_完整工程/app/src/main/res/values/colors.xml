@@ -69,4 +69,21 @@
     <color name="yb_color_status_danger">#D92D2D</color>
     <color name="yb_color_overlay">#66000000</color>
     <color name="yb_color_video_placeholder">#F1F2FA</color>
+
+    <!-- YinBan T1 night surface tokens for logged-in pages. -->
+    <color name="yb_color_night_background">#171247</color>
+    <color name="yb_color_night_background_deep">#0E0B2D</color>
+    <color name="yb_color_night_background_highlight">#3B2A8F</color>
+    <color name="yb_color_night_surface">#33FFFFFF</color>
+    <color name="yb_color_night_surface_strong">#4DFFFFFF</color>
+    <color name="yb_color_night_surface_pressed">#5CFFFFFF</color>
+    <color name="yb_color_night_border">#33FFFFFF</color>
+    <color name="yb_color_night_border_strong">#59FFFFFF</color>
+    <color name="yb_color_night_text_primary">#F8F7FF</color>
+    <color name="yb_color_night_text_secondary">#D9D5FF</color>
+    <color name="yb_color_night_text_muted">#A9A3CF</color>
+    <color name="yb_color_night_navigation">#CC15113B</color>
+    <color name="yb_color_night_overlay">#B3000000</color>
+    <color name="yb_color_night_switch_track">#66FFFFFF</color>
+    <color name="yb_color_night_switch_thumb">#F8F7FF</color>
 </resources>
