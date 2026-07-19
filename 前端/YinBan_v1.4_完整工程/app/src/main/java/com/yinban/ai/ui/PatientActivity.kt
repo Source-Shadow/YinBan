@@ -12,8 +12,13 @@ import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
+import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import com.google.android.material.R as MaterialR
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
@@ -50,6 +55,19 @@ class PatientActivity : AppCompatActivity(),
     private fun snackbar(msg: String, dur: Int = Snackbar.LENGTH_SHORT): Snackbar {
         return Snackbar.make(binding.root, msg, dur)
             .setAnchorView(R.id.fragment_container)
+    }
+
+    private fun homeSnackbar(msg: String, dur: Int = Snackbar.LENGTH_SHORT): Snackbar {
+        return snackbar(msg, dur).setAnchorView(binding.bottomNav).also { bar ->
+            bar.view.background = ContextCompat.getDrawable(this, R.drawable.yb_home_bg_snackbar)
+            bar.view.findViewById<TextView>(MaterialR.id.snackbar_text)
+                ?.setTextColor(ContextCompat.getColor(this, R.color.yb_color_night_text_primary))
+            (bar.view.layoutParams as? ViewGroup.MarginLayoutParams)?.let { params ->
+                val margin = (20 * resources.displayMetrics.density).toInt()
+                params.setMargins(margin, params.topMargin, margin, margin)
+                bar.view.layoutParams = params
+            }
+        }
     }
 
     // ── 定时器 ──
@@ -89,6 +107,12 @@ class PatientActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         binding = ActivityPatientBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        window.statusBarColor = ContextCompat.getColor(this, R.color.yb_color_night_background_deep)
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.yb_color_night_background_deep)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
 
         prefManager = PreferenceManager.getInstance(this)
         wsManager = WebSocketManager.getInstance()
@@ -178,11 +202,11 @@ class PatientActivity : AppCompatActivity(),
             hardwareStream.startVideoStream()
             val cameraUrl = getCameraStreamUrl()
             wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("video", cameraUrl))
-            snackbar("摄像头已开启，监护人可查看", Snackbar.LENGTH_SHORT).show()
+            homeSnackbar("摄像头已开启，监护人可查看", Snackbar.LENGTH_SHORT).show()
         } else {
             hardwareStream.stopVideoStream()
             wsManager.sendMessage(MessageType.STREAM_STOP, StreamStopData("video"))
-            snackbar("摄像头已关闭", Snackbar.LENGTH_SHORT).show()
+            homeSnackbar("摄像头已关闭", Snackbar.LENGTH_SHORT).show()
         }
     }
 
@@ -191,11 +215,11 @@ class PatientActivity : AppCompatActivity(),
         if (enabled) {
             hardwareStream.startAudioStream()
             wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("audio"))
-            snackbar("麦克风已开启，监护人可听到", Snackbar.LENGTH_SHORT).show()
+            homeSnackbar("麦克风已开启，监护人可听到", Snackbar.LENGTH_SHORT).show()
         } else {
             hardwareStream.stopAudioStream()
             wsManager.sendMessage(MessageType.STREAM_STOP, StreamStopData("audio"))
-            snackbar("麦克风已关闭", Snackbar.LENGTH_SHORT).show()
+            homeSnackbar("麦克风已关闭", Snackbar.LENGTH_SHORT).show()
         }
     }
 
@@ -331,22 +355,22 @@ class PatientActivity : AppCompatActivity(),
         val banner = binding.bannerConnection
         when {
             !connected -> {
-                banner.setBackgroundColor(getColor(R.color.status_disconnected_bg))
-                dot.background.setTint(getColor(R.color.status_disconnected))
+                banner.setBackgroundResource(R.drawable.yb_home_bg_compact_status)
+                dot.background.setTint(getColor(R.color.yb_color_status_offline))
                 tv.text = "连接已断开"
-                tv.setTextColor(getColor(R.color.text_secondary))
+                tv.setTextColor(getColor(R.color.yb_color_night_text_primary))
             }
             roomStatus == "paired" -> {
-                banner.setBackgroundColor(getColor(R.color.status_online_bg))
-                dot.background.setTint(getColor(R.color.status_online))
+                banner.setBackgroundResource(R.drawable.yb_home_bg_compact_status)
+                dot.background.setTint(getColor(R.color.yb_color_status_connected))
                 tv.text = "已配对 · AI 影伴守护中"
-                tv.setTextColor(getColor(R.color.status_online_text))
+                tv.setTextColor(getColor(R.color.yb_color_night_text_primary))
             }
             else -> {
-                banner.setBackgroundColor(getColor(R.color.status_waiting_bg))
-                dot.background.setTint(getColor(R.color.status_waiting))
+                banner.setBackgroundResource(R.drawable.yb_home_bg_compact_status)
+                dot.background.setTint(getColor(R.color.yb_color_status_waiting))
                 tv.text = "等待监护人连入"
-                tv.setTextColor(getColor(R.color.status_waiting_text))
+                tv.setTextColor(getColor(R.color.yb_color_night_text_primary))
             }
         }
         binding.root.announceForAccessibility(tv.text)
@@ -465,13 +489,13 @@ class PatientActivity : AppCompatActivity(),
         latestLat = fuzzed.lat; latestLng = fuzzed.lng
         wsManager.sendMessage(MessageType.LOCATION_UPDATE,
             LocationUpdateData(fuzzed.lat, fuzzed.lng, if (fuzzed.isFuzzed) 1100f else 5f, isPrivacyMode, false))
-        snackbar("📍 位置已上报${if (fuzzed.isFuzzed) "(隐私)" else ""}", Snackbar.LENGTH_SHORT).show()
+        homeSnackbar("位置已上报${if (fuzzed.isFuzzed) "(隐私)" else ""}", Snackbar.LENGTH_SHORT).show()
     }
 
     private fun sendDeviceStatus() {
         wsManager.sendMessage(MessageType.DEVICE_STATUS,
             DeviceStatusData(camera = isVideoOn, headphone = true, microphone = isAudioOn, battery = 85, networkType = "wifi"))
-        snackbar("📱 设备状态已上报", Snackbar.LENGTH_SHORT).show()
+        homeSnackbar("设备状态已上报", Snackbar.LENGTH_SHORT).show()
     }
 
     private fun showSosConfirmDialog() {

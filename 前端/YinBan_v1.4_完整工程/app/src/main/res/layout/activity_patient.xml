@@ -1,70 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  v2.0 — 患者端主页 + 4 Tab 底部导航
-  设计语言：暖 Indigo · 大圆角 · 深度阴影 · 柔和背景
--->
+<!-- 患者端主页 + 4 Tab 底部导航 -->
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/coordinator_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@drawable/yb_night_bg_page">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/yb_night_bg_page"
         android:orientation="vertical">
 
-    <!-- ═══════ 连接状态横幅 ═══════ -->
     <LinearLayout
         android:id="@+id/banner_connection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal"
+        android:layout_marginStart="@dimen/yb_spacing_20"
+        android:layout_marginEnd="@dimen/yb_spacing_20"
+        android:layout_marginTop="@dimen/yb_spacing_12"
+        android:background="@drawable/yb_home_bg_compact_status"
+        android:elevation="0dp"
         android:gravity="center_vertical"
-        android:paddingHorizontal="14dp" android:paddingVertical="12dp"
-        android:background="@drawable/bg_message_bubble"
-        android:elevation="1dp">
-        <View android:layout_width="8dp" android:layout_height="8dp"
-            android:background="@drawable/bg_step_active" android:id="@+id/dot_status" />
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:orientation="vertical"
-            android:layout_marginStart="10dp">
-            <TextView android:id="@+id/tv_connection_status"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="等待连接" android:textSize="14sp"
-                android:textColor="@color/status_waiting_text"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/yb_spacing_16"
+        android:paddingVertical="@dimen/yb_spacing_8">
+
+        <View
+            android:id="@+id/dot_status"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/bg_step_active"
+            android:backgroundTint="@color/yb_color_status_offline" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/yb_spacing_12"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_connection_status"
+                style="@style/Yb.Night.Text.Status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="等待连接"
+                android:textColor="@color/yb_color_night_text_primary"
                 android:fontFamily="sans-serif-medium" />
-            <TextView android:id="@+id/tv_room_number"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="房间 ----" android:textSize="11sp"
-                android:textColor="@color/text_tertiary"
-                android:layout_marginTop="1dp" />
+
+            <TextView
+                android:id="@+id/tv_room_number"
+                style="@style/Yb.Night.Text.BodySecondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:text="房间 ----"
+                android:textColor="@color/yb_color_night_text_muted" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- ═══════ Fragment 容器 ═══════ -->
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- ═══════ 底部导航 ═══════ -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surface"
-        android:elevation="8dp"
-        app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled"
-        app:itemIconTint="@color/bottom_nav_icon_tint_selector"
-        app:itemTextColor="@color/bottom_nav_text_color_selector"
+        android:layout_height="68dp"
+        android:background="@drawable/yb_home_bg_bottom_navigation"
+        android:elevation="0dp"
+        app:itemBackground="@android:color/transparent"
+        app:itemIconTint="@color/yb_home_bottom_nav_tint"
+        app:itemRippleColor="@color/yb_color_night_surface_pressed"
         app:itemTextAppearanceActive="@style/BottomNavLabel"
-        app:itemTextAppearanceInactive="@style/BottomNavLabel" />
+        app:itemTextAppearanceInactive="@style/BottomNavLabel"
+        app:itemTextColor="@color/yb_home_bottom_nav_tint"
+        app:labelVisibilityMode="labeled"
+        app:menu="@menu/bottom_nav_menu" />
 
     </LinearLayout>
 

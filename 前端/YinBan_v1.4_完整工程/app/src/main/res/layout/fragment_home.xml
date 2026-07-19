@@ -1,136 +1,253 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 主页 Fragment v2.0 — 待机画面 + 设备控制 + SOS -->
+<!-- 主页 Fragment — 待机画面 + 设备控制 + SOS -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@android:color/transparent"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:overScrollMode="ifContentScrolls">
 
-    <LinearLayout android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingStart="@dimen/yb_spacing_20"
+        android:paddingTop="@dimen/yb_spacing_12"
+        android:paddingEnd="@dimen/yb_spacing_20"
+        android:paddingBottom="@dimen/yb_spacing_12">
 
-        <!-- ═══════ 安心待机画面 ═══════ -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_standby"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="24dp" app:cardElevation="4dp"
-            app:cardBackgroundColor="@android:color/transparent">
-            <LinearLayout android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_standby_gradient"
-                android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:paddingVertical="32dp"
-                android:paddingHorizontal="24dp">
-                <View android:layout_width="48dp" android:layout_height="48dp"
-                    android:background="@drawable/bg_step_active"
-                    android:backgroundTint="#33FFFFFF" />
-                <TextView android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="🌙"
-                    android:textSize="40sp" android:layout_marginTop="-40dp"
-                    android:layout_marginBottom="12dp" />
-                <TextView android:id="@+id/tv_standby_title"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="AI 影伴守护中" android:textSize="22sp"
-                    android:textColor="@color/text_on_dark"
-                    android:fontFamily="sans-serif-medium" />
-                <TextView android:id="@+id/tv_standby_subtitle"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="已安全守护 0 分钟" android:textSize="14sp"
-                    android:textColor="@color/text_on_dark" android:alpha="0.7"
-                    android:layout_marginTop="6dp" />
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="@dimen/yb_radius_large"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/yb_color_night_border"
+            app:strokeWidth="1dp">
 
-                <!-- 每日一言分隔线 + 文本 -->
-                <View android:layout_width="48dp" android:layout_height="1dp"
-                    android:layout_marginTop="20dp" android:layout_marginBottom="14dp"
-                    android:background="#44FFFFFF" />
-                <TextView android:id="@+id/tv_daily_quote"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="加载中…" android:textSize="13sp"
-                    android:textColor="@color/text_on_dark" android:alpha="0.85"
-                    android:gravity="center" android:lineSpacingExtra="4dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/yb_home_bg_hero"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/yb_spacing_20"
+                android:paddingTop="@dimen/yb_spacing_16"
+                android:paddingEnd="@dimen/yb_spacing_20"
+                android:paddingBottom="@dimen/yb_spacing_16">
+
+                <FrameLayout
+                    android:layout_width="112dp"
+                    android:layout_height="112dp"
+                    android:background="@drawable/yb_home_logo_orb">
+
+                    <ImageView
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:layout_gravity="center"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="@null"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/yb_xiaoyinghuo_idle" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_standby_title"
+                    style="@style/Yb.Night.Text.SectionTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_8"
+                    android:gravity="center"
+                    android:text="AI 影伴守护中" />
+
+                <TextView
+                    android:id="@+id/tv_standby_subtitle"
+                    style="@style/Yb.Night.Text.BodySecondary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_4"
+                    android:gravity="center"
+                    android:text="已安全守护 0 分钟"
+                    android:textColor="@color/yb_color_night_text_secondary" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- ═══════ 设备控制 ═══════ -->
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            app:cardCornerRadius="20dp" app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/surface">
-            <LinearLayout android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:orientation="vertical"
-                android:paddingHorizontal="16dp" android:paddingVertical="14dp">
+            android:layout_marginTop="@dimen/yb_spacing_12"
+            android:background="@drawable/yb_night_bg_quote_card"
+            android:gravity="center_vertical"
+            android:minHeight="64dp"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/yb_spacing_16"
+            android:paddingTop="@dimen/yb_spacing_12"
+            android:paddingEnd="@dimen/yb_spacing_16"
+            android:paddingBottom="@dimen/yb_spacing_12">
 
-                <LinearLayout android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:text="🎥 摄像头"
-                        android:textSize="15sp" android:textColor="@color/text_primary"
-                        android:fontFamily="sans-serif-medium" />
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/switch_video"
-                        android:layout_width="wrap_content" android:layout_height="32dp"
-                        android:contentDescription="摄像头开关" />
-                </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="“"
+                android:textColor="@color/yb_color_primary"
+                android:textSize="32sp" />
 
-                <View android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginVertical="10dp"
-                    android:background="@color/surface_variant" />
-
-                <LinearLayout android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:text="🎤 麦克风"
-                        android:textSize="15sp" android:textColor="@color/text_primary"
-                        android:fontFamily="sans-serif-medium" />
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/switch_audio"
-                        android:layout_width="wrap_content" android:layout_height="32dp"
-                        android:contentDescription="麦克风开关" />
-                </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- ═══════ 快捷操作 ═══════ -->
-        <LinearLayout android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:layout_marginTop="14dp"
-            android:orientation="horizontal">
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_send_location"
-                android:layout_width="0dp" android:layout_height="50dp"
-                android:layout_weight="1" android:text="📍 位置"
-                android:textSize="13sp" app:cornerRadius="16dp"
-                android:textColor="@color/primary"
-                app:strokeColor="@color/primary_container"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_send_device_status"
-                android:layout_width="0dp" android:layout_height="50dp"
-                android:layout_weight="1" android:layout_marginStart="10dp"
-                android:text="📱 状态" android:textSize="13sp"
-                app:cornerRadius="16dp"
-                android:textColor="@color/primary"
-                app:strokeColor="@color/primary_container"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+            <TextView
+                android:id="@+id/tv_daily_quote"
+                style="@style/Yb.Night.Text.BodySecondary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/yb_spacing_8"
+                android:layout_weight="1"
+                android:lineSpacingExtra="2dp"
+                android:text="加载中…"
+                android:textColor="@color/yb_color_night_text_secondary" />
         </LinearLayout>
 
-        <!-- ═══════ SOS 紧急求助 ═══════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/yb_spacing_16"
+            android:background="@drawable/yb_night_bg_device_card"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/yb_spacing_16"
+            android:paddingVertical="@dimen/yb_spacing_12">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/yb_size_icon"
+                    android:layout_height="@dimen/yb_size_icon"
+                    android:contentDescription="摄像头"
+                    android:src="@drawable/yb_ic_home_camera"
+                    app:tint="@color/yb_color_primary" />
+
+                <TextView
+                    style="@style/Yb.Night.Text.Body"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/yb_spacing_12"
+                    android:layout_weight="1"
+                    android:text="摄像头"
+                    android:fontFamily="sans-serif-medium" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_video"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="摄像头开关"
+                    app:thumbTint="@color/yb_night_switch_thumb"
+                    app:trackTint="@color/yb_night_switch_track" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/yb_color_night_border" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="@dimen/yb_size_icon"
+                    android:layout_height="@dimen/yb_size_icon"
+                    android:contentDescription="麦克风"
+                    android:src="@drawable/yb_ic_home_microphone"
+                    app:tint="@color/yb_color_primary" />
+
+                <TextView
+                    style="@style/Yb.Night.Text.Body"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/yb_spacing_12"
+                    android:layout_weight="1"
+                    android:text="麦克风"
+                    android:fontFamily="sans-serif-medium" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/switch_audio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="麦克风开关"
+                    app:thumbTint="@color/yb_night_switch_thumb"
+                    app:trackTint="@color/yb_night_switch_track" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/yb_spacing_16"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_send_location"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/yb_size_button_height"
+                android:layout_weight="1"
+                android:background="@drawable/yb_night_bg_action_secondary"
+                android:fontFamily="sans-serif-medium"
+                android:text="位置"
+                android:textColor="@color/yb_color_night_text_primary"
+                android:textSize="15sp"
+                app:backgroundTint="@null"
+                app:cornerRadius="@dimen/yb_radius_medium"
+                app:icon="@drawable/yb_ic_home_location"
+                app:iconGravity="textStart"
+                app:iconPadding="@dimen/yb_spacing_8"
+                app:iconTint="@color/yb_color_primary"
+                app:strokeColor="@color/yb_color_night_border"
+                app:strokeWidth="1dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_send_device_status"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/yb_size_button_height"
+                android:layout_marginStart="@dimen/yb_spacing_12"
+                android:layout_weight="1"
+                android:background="@drawable/yb_night_bg_action_secondary"
+                android:fontFamily="sans-serif-medium"
+                android:text="状态"
+                android:textColor="@color/yb_color_night_text_primary"
+                android:textSize="15sp"
+                app:backgroundTint="@null"
+                app:cornerRadius="@dimen/yb_radius_medium"
+                app:icon="@drawable/yb_ic_home_device_status"
+                app:iconGravity="textStart"
+                app:iconPadding="@dimen/yb_spacing_8"
+                app:iconTint="@color/yb_color_primary"
+                app:strokeColor="@color/yb_color_night_border"
+                app:strokeWidth="1dp" />
+        </LinearLayout>
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_sos"
-            android:layout_width="match_parent" android:layout_height="60dp"
-            android:layout_marginTop="14dp"
-            android:text="🆘  紧急求助"
-            android:textSize="16sp" android:textColor="@color/on_primary"
-            android:fontFamily="sans-serif-medium"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/yb_size_sos_button_height"
+            android:layout_marginTop="@dimen/yb_spacing_12"
+            android:background="@drawable/yb_night_bg_sos"
             android:contentDescription="紧急求助按钮，点击即可触发"
-            app:cornerRadius="18dp"
-            app:backgroundTint="@color/sos_red" />
+            android:fontFamily="sans-serif-medium"
+            android:text="紧急求助"
+            android:textColor="@color/on_primary"
+            android:textSize="17sp"
+            app:backgroundTint="@null"
+            app:cornerRadius="@dimen/yb_radius_medium"
+            app:icon="@drawable/yb_ic_home_sos"
+            app:iconGravity="textStart"
+            app:iconPadding="@dimen/yb_spacing_8"
+            app:iconTint="@color/on_primary" />
     </LinearLayout>
 </ScrollView>

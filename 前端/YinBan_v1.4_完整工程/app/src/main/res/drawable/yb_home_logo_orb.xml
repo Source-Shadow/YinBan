@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:left="8dp"
+        android:top="8dp"
+        android:right="8dp"
+        android:bottom="8dp">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="56dp"
+                android:startColor="@color/yb_color_night_surface_strong"
+                android:centerColor="@color/yb_color_night_surface"
+                android:endColor="@android:color/transparent" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/yb_color_night_border" />
+        </shape>
+    </item>
+</layer-list>
