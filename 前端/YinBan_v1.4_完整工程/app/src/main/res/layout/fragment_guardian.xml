@@ -1,177 +1,370 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 监护栏 Fragment v2.0 -->
+<!-- 患者端监护栏 Fragment：T1 深色协助入口 -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@android:color/transparent"
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:overScrollMode="ifContentScrolls">
 
-    <LinearLayout android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingStart="@dimen/yb_spacing_20"
+        android:paddingTop="@dimen/yb_spacing_20"
+        android:paddingEnd="@dimen/yb_spacing_20"
+        android:paddingBottom="@dimen/yb_spacing_24">
 
-        <!-- 2×2 快捷入口 -->
-        <LinearLayout android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_shortcut_message"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginEnd="6dp"
+                android:layout_width="0dp"
+                android:layout_height="152dp"
+                android:layout_marginEnd="@dimen/yb_spacing_8"
+                android:layout_weight="1"
+                android:clickable="true"
                 android:contentDescription="消息，点击查看消息"
-                app:cardCornerRadius="20dp" app:cardElevation="2dp"
-                android:clickable="true" android:focusable="true"
+                android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="@color/surface">
-                <LinearLayout android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="@dimen/yb_radius_large"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/yb_guardian_bg_feature_card"
+                    android:duplicateParentState="true"
+                    android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:gravity="center" android:padding="12dp">
-                    <View android:layout_width="44dp" android:layout_height="44dp"
-                        android:background="@drawable/bg_step_active"
-                        android:backgroundTint="#106366F1" />
-                    <TextView android:layout_width="wrap_content"
+                    android:padding="@dimen/yb_spacing_16">
+
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/yb_guardian_bg_icon_container">
+
+                        <ImageView
+                            android:layout_width="@dimen/yb_size_entry_icon"
+                            android:layout_height="@dimen/yb_size_entry_icon"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/yb_ic_guardian_message"
+                            app:tint="@color/yb_color_primary" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/Yb.Night.Text.SectionTitle"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="💬" android:textSize="20sp"
-                        android:layout_marginTop="-34dp" android:layout_marginBottom="6dp" />
-                    <TextView android:text="消息" android:textSize="14sp"
-                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="@dimen/yb_spacing_12"
+                        android:ellipsize="end"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                    <TextView android:id="@+id/tv_unread_count"
-                        android:text="查看消息" android:textSize="11sp"
-                        android:textColor="@color/text_tertiary"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp" />
+                        android:maxLines="1"
+                        android:text="消息"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/tv_unread_count"
+                        style="@style/Yb.Night.Text.Status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/yb_spacing_8"
+                        android:background="@drawable/yb_guardian_bg_status_chip"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:includeFontPadding="true"
+                        android:maxLines="1"
+                        android:minHeight="32dp"
+                        android:paddingStart="@dimen/yb_spacing_12"
+                        android:paddingTop="@dimen/yb_spacing_4"
+                        android:paddingEnd="@dimen/yb_spacing_12"
+                        android:paddingBottom="@dimen/yb_spacing_4"
+                        android:text="查看消息"
+                        android:textColor="@color/yb_color_night_text_secondary"
+                        android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_shortcut_location"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginStart="6dp"
+                android:layout_width="0dp"
+                android:layout_height="152dp"
+                android:layout_marginStart="@dimen/yb_spacing_8"
+                android:layout_weight="1"
+                android:clickable="true"
                 android:contentDescription="位置，查看患者位置"
-                app:cardCornerRadius="20dp" app:cardElevation="2dp"
-                android:clickable="true" android:focusable="true"
+                android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="@color/surface">
-                <LinearLayout android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="@dimen/yb_radius_large"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/yb_guardian_bg_feature_card"
+                    android:duplicateParentState="true"
+                    android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:gravity="center" android:padding="12dp">
-                    <View android:layout_width="44dp" android:layout_height="44dp"
-                        android:background="@drawable/bg_step_active"
-                        android:backgroundTint="#10059669" />
-                    <TextView android:layout_width="wrap_content"
+                    android:padding="@dimen/yb_spacing_16">
+
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/yb_guardian_bg_icon_container">
+
+                        <ImageView
+                            android:layout_width="@dimen/yb_size_entry_icon"
+                            android:layout_height="@dimen/yb_size_entry_icon"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/yb_ic_guardian_location"
+                            app:tint="@color/yb_color_primary" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/Yb.Night.Text.SectionTitle"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="📍" android:textSize="20sp"
-                        android:layout_marginTop="-34dp" android:layout_marginBottom="6dp" />
-                    <TextView android:text="位置" android:textSize="14sp"
-                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="@dimen/yb_spacing_12"
+                        android:ellipsize="end"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                    <TextView android:id="@+id/tv_location_status"
-                        android:text="等待定位" android:textSize="11sp"
-                        android:textColor="@color/text_tertiary"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp" />
+                        android:maxLines="1"
+                        android:text="位置"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/tv_location_status"
+                        style="@style/Yb.Night.Text.Status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/yb_spacing_8"
+                        android:background="@drawable/yb_guardian_bg_status_chip"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:includeFontPadding="true"
+                        android:maxLines="1"
+                        android:minHeight="32dp"
+                        android:paddingStart="@dimen/yb_spacing_12"
+                        android:paddingTop="@dimen/yb_spacing_4"
+                        android:paddingEnd="@dimen/yb_spacing_12"
+                        android:paddingBottom="@dimen/yb_spacing_4"
+                        android:text="等待定位"
+                        android:textColor="@color/yb_color_night_text_secondary"
+                        android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-        <LinearLayout android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="@dimen/yb_spacing_16"
+            android:orientation="horizontal">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_shortcut_call"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginEnd="6dp"
+                android:layout_width="0dp"
+                android:layout_height="152dp"
+                android:layout_marginEnd="@dimen/yb_spacing_8"
+                android:layout_weight="1"
+                android:clickable="true"
                 android:contentDescription="通话，发起语音或视频通话"
-                app:cardCornerRadius="20dp" app:cardElevation="2dp"
-                android:clickable="true" android:focusable="true"
+                android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="@color/surface">
-                <LinearLayout android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="@dimen/yb_radius_large"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/yb_guardian_bg_feature_card"
+                    android:duplicateParentState="true"
+                    android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:gravity="center" android:padding="12dp">
-                    <View android:layout_width="44dp" android:layout_height="44dp"
-                        android:background="@drawable/bg_step_active"
-                        android:backgroundTint="#10D97706" />
-                    <TextView android:layout_width="wrap_content"
+                    android:padding="@dimen/yb_spacing_16">
+
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/yb_guardian_bg_icon_container">
+
+                        <ImageView
+                            android:layout_width="@dimen/yb_size_entry_icon"
+                            android:layout_height="@dimen/yb_size_entry_icon"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/yb_ic_guardian_call"
+                            app:tint="@color/yb_color_primary" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/Yb.Night.Text.SectionTitle"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="📞" android:textSize="20sp"
-                        android:layout_marginTop="-34dp" android:layout_marginBottom="6dp" />
-                    <TextView android:text="通话" android:textSize="14sp"
-                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="@dimen/yb_spacing_12"
+                        android:ellipsize="end"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                    <TextView android:text="立即拨打" android:textSize="11sp"
-                        android:textColor="@color/text_tertiary"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp" />
+                        android:maxLines="1"
+                        android:text="通话"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        style="@style/Yb.Night.Text.Status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/yb_spacing_8"
+                        android:background="@drawable/yb_guardian_bg_status_chip"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:includeFontPadding="true"
+                        android:maxLines="1"
+                        android:minHeight="32dp"
+                        android:paddingStart="@dimen/yb_spacing_12"
+                        android:paddingTop="@dimen/yb_spacing_4"
+                        android:paddingEnd="@dimen/yb_spacing_12"
+                        android:paddingBottom="@dimen/yb_spacing_4"
+                        android:text="立即拨打"
+                        android:textColor="@color/yb_color_night_text_secondary"
+                        android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_shortcut_video"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginStart="6dp"
+                android:layout_width="0dp"
+                android:layout_height="152dp"
+                android:layout_marginStart="@dimen/yb_spacing_8"
+                android:layout_weight="1"
+                android:clickable="true"
                 android:contentDescription="画面，查看实时视频"
-                app:cardCornerRadius="20dp" app:cardElevation="2dp"
-                android:clickable="true" android:focusable="true"
+                android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="@color/surface">
-                <LinearLayout android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="@dimen/yb_radius_large"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/yb_guardian_bg_feature_card"
+                    android:duplicateParentState="true"
+                    android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:gravity="center" android:padding="12dp">
-                    <View android:layout_width="44dp" android:layout_height="44dp"
-                        android:background="@drawable/bg_step_active"
-                        android:backgroundTint="#10DC2626" />
-                    <TextView android:layout_width="wrap_content"
+                    android:padding="@dimen/yb_spacing_16">
+
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:background="@drawable/yb_guardian_bg_icon_container">
+
+                        <ImageView
+                            android:layout_width="@dimen/yb_size_entry_icon"
+                            android:layout_height="@dimen/yb_size_entry_icon"
+                            android:layout_gravity="center"
+                            android:contentDescription="@null"
+                            android:src="@drawable/yb_ic_guardian_video"
+                            app:tint="@color/yb_color_primary" />
+                    </FrameLayout>
+
+                    <TextView
+                        style="@style/Yb.Night.Text.SectionTitle"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="🎥" android:textSize="20sp"
-                        android:layout_marginTop="-34dp" android:layout_marginBottom="6dp" />
-                    <TextView android:text="画面" android:textSize="14sp"
-                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="@dimen/yb_spacing_12"
+                        android:ellipsize="end"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                    <TextView android:text="实时查看" android:textSize="11sp"
-                        android:textColor="@color/text_tertiary"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp" />
+                        android:maxLines="1"
+                        android:text="画面"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        style="@style/Yb.Night.Text.Status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/yb_spacing_8"
+                        android:background="@drawable/yb_guardian_bg_status_chip"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:includeFontPadding="true"
+                        android:maxLines="1"
+                        android:minHeight="32dp"
+                        android:paddingStart="@dimen/yb_spacing_12"
+                        android:paddingTop="@dimen/yb_spacing_4"
+                        android:paddingEnd="@dimen/yb_spacing_12"
+                        android:paddingBottom="@dimen/yb_spacing_4"
+                        android:text="实时查看"
+                        android:textColor="@color/yb_color_night_text_secondary"
+                        android:textSize="12sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-        <!-- 最近消息 -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            app:cardCornerRadius="20dp" app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/surface">
-            <LinearLayout android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:orientation="vertical"
-                android:padding="16dp">
-                <TextView android:text="💬 最近消息"
-                    android:textSize="14sp" android:textColor="@color/text_secondary"
-                    android:fontFamily="sans-serif-medium"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:layout_marginBottom="6dp" />
-                <TextView android:id="@+id/tv_recent_message"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:text="暂无消息" android:textSize="13sp"
-                    android:textColor="@color/text_primary"
-                    android:padding="12dp"
-                    android:background="@drawable/bg_message_bubble" />
+            android:layout_marginTop="@dimen/yb_spacing_20"
+            app:cardBackgroundColor="@android:color/transparent"
+            app:cardCornerRadius="@dimen/yb_radius_large"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/yb_guardian_bg_recent_message"
+                android:orientation="vertical"
+                android:padding="@dimen/yb_spacing_20">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/yb_size_icon"
+                        android:layout_height="@dimen/yb_size_icon"
+                        android:contentDescription="@null"
+                        android:src="@drawable/yb_ic_guardian_recent"
+                        app:tint="@color/yb_color_primary" />
+
+                    <TextView
+                        style="@style/Yb.Night.Text.Body"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/yb_spacing_8"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="最近消息"
+                        android:textColor="@color/yb_color_night_text_secondary" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_recent_message"
+                    style="@style/Yb.Night.Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_12"
+                    android:background="@drawable/yb_guardian_bg_message_field"
+                    android:ellipsize="end"
+                    android:lineSpacingExtra="2dp"
+                    android:maxLines="3"
+                    android:minHeight="@dimen/yb_size_input_height"
+                    android:paddingStart="@dimen/yb_spacing_16"
+                    android:paddingTop="@dimen/yb_spacing_12"
+                    android:paddingEnd="@dimen/yb_spacing_16"
+                    android:paddingBottom="@dimen/yb_spacing_12"
+                    android:text="暂无消息"
+                    android:textColor="@color/yb_color_night_text_primary" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
-
     </LinearLayout>
 </ScrollView>
