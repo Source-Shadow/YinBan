@@ -1,6 +1,7 @@
 package com.yinban.ai.ui
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -44,11 +45,15 @@ class ChatAiFragment : Fragment() {
     fun updateAiStatus(connected: Boolean) {
         val b = binding ?: return
         if (connected) {
-            b.tvAiStatus.text = "🟢 小影火 在线"
-            b.tvAiStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.status_online_text))
+            b.tvAiStatus.text = "小影火 在线"
+            val statusColor = ContextCompat.getColor(requireContext(), R.color.yb_color_status_connected)
+            b.tvAiStatus.setTextColor(statusColor)
+            b.viewAiStatusDot.backgroundTintList = ColorStateList.valueOf(statusColor)
         } else {
-            b.tvAiStatus.text = "🔥 小影火 直连"
-            b.tvAiStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary))
+            b.tvAiStatus.text = "小影火 直连"
+            val statusColor = ContextCompat.getColor(requireContext(), R.color.yb_color_status_warning)
+            b.tvAiStatus.setTextColor(statusColor)
+            b.viewAiStatusDot.backgroundTintList = ColorStateList.valueOf(statusColor)
         }
     }
 
