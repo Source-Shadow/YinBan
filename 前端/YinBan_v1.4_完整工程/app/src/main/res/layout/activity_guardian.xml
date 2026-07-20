@@ -5,245 +5,442 @@
     android:id="@+id/coordinator_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background">
+    android:background="@drawable/yb_night_bg_page"
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="@dimen/yb_spacing_8">
 
-    <!-- 顶部状态栏 -->
-    <LinearLayout
-        android:id="@+id/banner_status"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="14dp" android:paddingVertical="12dp"
-        android:background="@drawable/bg_message_bubble"
-        android:elevation="1dp">
-        <View android:layout_width="8dp" android:layout_height="8dp"
-            android:background="@drawable/bg_step_active" android:id="@+id/dot_status" />
-        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-            android:layout_weight="1" android:orientation="vertical"
-            android:layout_marginStart="10dp">
-            <TextView android:text="监护人端" android:textSize="14sp"
-                android:textColor="@color/text_primary"
-                android:fontFamily="sans-serif-medium"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" />
-            <TextView android:id="@+id/tv_guardian_connection"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="等待配对" android:textSize="11sp"
-                android:textColor="@color/status_waiting_text" />
-        </LinearLayout>
-        <TextView android:id="@+id/tv_guardian_room"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="----" android:textSize="11sp"
-            android:textColor="@color/text_tertiary" />
-    </LinearLayout>
-
-    <!-- SOS 紧急警报面板 -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_sos_alert"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:visibility="gone"
-        app:cardCornerRadius="20dp" app:cardElevation="6dp"
-        app:strokeWidth="3dp" app:strokeColor="@color/sos_red"
-        app:cardBackgroundColor="#FFFEF2F2">
-        <LinearLayout android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:orientation="vertical"
-            android:padding="16dp">
-            <TextView android:text="🚨 紧急求助！" android:textSize="18sp"
-                android:textColor="@color/sos_red"
-                android:fontFamily="sans-serif-medium"
-                android:layout_width="wrap_content" android:layout_height="wrap_content" />
-            <TextView android:id="@+id/tv_sos_message"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" android:text="患者发出紧急求助"
-                android:textSize="14sp" android:textColor="@color/text_primary" />
-            <TextView android:id="@+id/tv_sos_location"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" android:text="📍 --"
-                android:textSize="12sp" android:textColor="@color/primary" />
-            <LinearLayout android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:layout_marginTop="12dp"
-                android:orientation="horizontal">
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_sos_view_video"
-                    android:layout_width="0dp" android:layout_height="44dp"
-                    android:layout_weight="1" android:text="📺 查看画面"
-                    android:textSize="13sp" app:cornerRadius="14dp"
-                    app:backgroundTint="@color/sos_red" />
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_sos_dismiss"
-                    android:layout_width="0dp" android:layout_height="44dp"
-                    android:layout_weight="1" android:layout_marginStart="8dp"
-                    android:text="已处理" android:textSize="13sp"
-                    app:cornerRadius="14dp" android:textColor="@color/text_secondary"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
-            </LinearLayout>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- ═══════ 内容区 (主页 / 我的 切换) ═══════ -->
-    <FrameLayout
-        android:id="@+id/content_area"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <!-- 默认：监护人主页内容 -->
+        <!-- 顶部状态栏 -->
         <LinearLayout
-            android:id="@+id/guardian_main"
+            android:id="@+id/banner_status"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/yb_spacing_20"
+            android:layout_marginEnd="@dimen/yb_spacing_20"
+            android:layout_marginTop="@dimen/yb_spacing_8"
+            android:background="@drawable/yb_guardian_home_bg_status_panel"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="@dimen/yb_spacing_16"
+            android:paddingVertical="@dimen/yb_spacing_12">
 
-    <!-- 数据看板 -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_dashboard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        app:cardCornerRadius="20dp" app:cardElevation="2dp"
-        app:cardBackgroundColor="@color/surface">
-        <LinearLayout android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:orientation="vertical"
-            android:padding="16dp">
-            <TextView android:text="📊 实时数据" android:textSize="13sp"
-                android:textColor="@color/text_secondary"
-                android:fontFamily="sans-serif-medium"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp" />
-            <LinearLayout android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <TextView android:id="@+id/tv_location_lat"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="纬度: --"
-                    android:textSize="13sp" android:textColor="@color/text_primary" />
-                <TextView android:id="@+id/tv_location_lng"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="经度: --"
-                    android:textSize="13sp" android:textColor="@color/text_primary" />
+            <View
+                android:id="@+id/dot_status"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:background="@drawable/bg_step_active" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/yb_spacing_12"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/Yb.Night.Text.Body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="监护人端"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/tv_guardian_connection"
+                    style="@style/Yb.Night.Text.Status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="等待配对" />
             </LinearLayout>
-            <TextView android:id="@+id/tv_location_accuracy"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginTop="2dp" android:text="精度: --"
-                android:textSize="11sp" android:textColor="@color/text_tertiary" />
-            <View android:layout_width="match_parent" android:layout_height="1dp"
-                android:layout_marginVertical="8dp"
-                android:background="@color/surface_variant" />
-            <LinearLayout android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <TextView android:id="@+id/tv_camera_status"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="摄像头: ⚪"
-                    android:textSize="13sp" android:textColor="@color/text_secondary" />
-                <TextView android:id="@+id/tv_headphone_status"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="耳机: ⚪"
-                    android:textSize="13sp" android:textColor="@color/text_secondary" />
-            </LinearLayout>
-            <View android:layout_width="match_parent" android:layout_height="1dp"
-                android:layout_marginVertical="8dp"
-                android:background="@color/surface_variant" />
-            <TextView android:text="💬 患者消息" android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                android:fontFamily="sans-serif-medium"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp" />
-            <TextView android:id="@+id/tv_patient_message"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="2dp" android:text="--"
-                android:textSize="13sp" android:textColor="@color/text_primary"
-                android:minHeight="36dp" android:gravity="center_vertical"
-                android:padding="12dp"
-                android:background="@drawable/bg_message_bubble" />
+
+            <TextView
+                android:id="@+id/tv_guardian_room"
+                style="@style/Yb.Night.Text.Status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/yb_guardian_home_bg_room_chip"
+                android:paddingHorizontal="@dimen/yb_spacing_12"
+                android:paddingVertical="@dimen/yb_spacing_8"
+                android:text="----"
+                android:textColor="@color/yb_color_night_text_muted" />
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
 
-    <!-- 视频画面 -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card_guardian_video"
-        android:layout_width="match_parent"
-        android:layout_height="0dp" android:layout_weight="1"
-        android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
-        android:layout_marginTop="8dp"
-        app:cardCornerRadius="24dp" app:cardElevation="2dp"
-        app:cardBackgroundColor="@color/video_container_bg">
-        <FrameLayout android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <ImageView android:id="@+id/iv_video"
+        <!-- SOS 紧急警报面板 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_sos_alert"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/yb_spacing_20"
+            android:layout_marginEnd="@dimen/yb_spacing_20"
+            android:layout_marginTop="@dimen/yb_spacing_12"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/yb_color_night_surface"
+            app:cardCornerRadius="@dimen/yb_radius_large"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/yb_color_status_danger"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:visibility="gone"
-                android:scaleType="centerCrop"
-                android:contentDescription="患者实时画面" />
-            <TextView android:id="@+id/tv_guardian_video_placeholder"
-                android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:layout_gravity="center" android:text="📺\n等待患者画面"
-                android:textSize="16sp" android:textColor="@color/text_on_dark"
-                android:gravity="center" android:alpha="0.5"
-                android:lineSpacingExtra="6dp" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/yb_spacing_16">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/yb_size_icon"
+                        android:layout_height="@dimen/yb_size_icon"
+                        android:contentDescription="@null"
+                        android:src="@drawable/yb_ic_guardian_home_alert"
+                        app:tint="@color/yb_color_status_danger" />
+
+                    <TextView
+                        style="@style/Yb.Night.Text.SectionTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/yb_spacing_8"
+                        android:text="紧急求助！"
+                        android:textColor="@color/yb_color_night_text_primary"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_sos_message"
+                    style="@style/Yb.Night.Text.BodySecondary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_8"
+                    android:text="患者发出紧急求助" />
+
+                <TextView
+                    android:id="@+id/tv_sos_location"
+                    style="@style/Yb.Night.Text.Status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_4"
+                    android:text="--"
+                    android:textColor="@color/yb_color_night_text_muted" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_12"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_sos_view_video"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:text="查看画面"
+                        android:textColor="@color/yb_color_night_text_primary"
+                        android:textSize="13sp"
+                        app:backgroundTint="@color/yb_color_status_danger"
+                        app:cornerRadius="@dimen/yb_radius_medium"
+                        app:icon="@drawable/yb_ic_guardian_home_video"
+                        app:iconPadding="@dimen/yb_spacing_8"
+                        app:iconTint="@color/yb_color_night_text_primary" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_sos_dismiss"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="@dimen/yb_spacing_8"
+                        android:layout_weight="1"
+                        android:text="已处理"
+                        android:textColor="@color/yb_color_night_text_secondary"
+                        android:textSize="13sp"
+                        app:cornerRadius="@dimen/yb_radius_medium"
+                        app:strokeColor="@color/yb_color_night_border_strong" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ═══════ 内容区 (主页 / 我的 切换) ═══════ -->
+        <FrameLayout
+            android:id="@+id/content_area"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <!-- 默认：监护人主页内容 -->
+            <LinearLayout
+                android:id="@+id/guardian_main"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <!-- 数据看板 -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_dashboard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/yb_spacing_20"
+                    android:layout_marginEnd="@dimen/yb_spacing_20"
+                    android:layout_marginTop="@dimen/yb_spacing_12"
+                    app:cardBackgroundColor="@color/yb_color_night_surface"
+                    app:cardCornerRadius="@dimen/yb_radius_large"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/yb_color_night_border"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/yb_spacing_16">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="@dimen/yb_size_icon"
+                                android:layout_height="@dimen/yb_size_icon"
+                                android:contentDescription="@null"
+                                android:src="@drawable/yb_ic_guardian_home_dashboard"
+                                app:tint="@color/yb_color_night_text_secondary" />
+
+                            <TextView
+                                style="@style/Yb.Night.Text.SectionTitle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/yb_spacing_8"
+                                android:text="实时数据"
+                                android:textSize="18sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            style="@style/Yb.Night.Text.Status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/yb_spacing_12"
+                            android:text="位置摘要"
+                            android:textColor="@color/yb_color_night_text_muted" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/yb_spacing_8"
+                            android:orientation="vertical"
+                            android:padding="@dimen/yb_spacing_12"
+                            android:background="@drawable/yb_guardian_home_bg_inner_panel">
+
+                            <TextView
+                                android:id="@+id/tv_location_lat"
+                                style="@style/Yb.Night.Text.BodySecondary"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="纬度: --" />
+
+                            <TextView
+                                android:id="@+id/tv_location_lng"
+                                style="@style/Yb.Night.Text.BodySecondary"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/yb_spacing_4"
+                                android:text="经度: --" />
+
+                            <TextView
+                                android:id="@+id/tv_location_accuracy"
+                                style="@style/Yb.Night.Text.Status"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/yb_spacing_4"
+                                android:text="精度: --"
+                                android:textColor="@color/yb_color_night_text_muted" />
+                        </LinearLayout>
+
+                        <TextView
+                            style="@style/Yb.Night.Text.Status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/yb_spacing_12"
+                            android:text="设备摘要"
+                            android:textColor="@color/yb_color_night_text_muted" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/yb_spacing_8"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tv_camera_status"
+                                style="@style/Yb.Night.Text.BodySecondary"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:background="@drawable/yb_guardian_home_bg_inner_panel"
+                                android:padding="@dimen/yb_spacing_12"
+                                android:text="摄像头: --" />
+
+                            <TextView
+                                android:id="@+id/tv_headphone_status"
+                                style="@style/Yb.Night.Text.BodySecondary"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/yb_spacing_8"
+                                android:layout_weight="1"
+                                android:background="@drawable/yb_guardian_home_bg_inner_panel"
+                                android:padding="@dimen/yb_spacing_12"
+                                android:text="耳机: --" />
+                        </LinearLayout>
+
+                        <TextView
+                            style="@style/Yb.Night.Text.Status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/yb_spacing_12"
+                            android:text="最近消息"
+                            android:textColor="@color/yb_color_night_text_muted" />
+
+                        <TextView
+                            android:id="@+id/tv_patient_message"
+                            style="@style/Yb.Night.Text.BodySecondary"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/yb_spacing_8"
+                            android:background="@drawable/yb_guardian_home_bg_message_field"
+                            android:gravity="center_vertical"
+                            android:minHeight="40dp"
+                            android:padding="@dimen/yb_spacing_12"
+                            android:text="--" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- 视频画面 -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_guardian_video"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginStart="@dimen/yb_spacing_20"
+                    android:layout_marginEnd="@dimen/yb_spacing_20"
+                    android:layout_marginTop="@dimen/yb_spacing_12"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="@color/yb_color_night_surface"
+                    app:cardCornerRadius="@dimen/yb_radius_video_container"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/yb_color_night_border"
+                    app:strokeWidth="1dp">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/yb_guardian_home_bg_video_surface">
+
+                        <ImageView
+                            android:id="@+id/iv_video"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:contentDescription="患者实时画面"
+                            android:scaleType="centerCrop"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/tv_guardian_video_placeholder"
+                            style="@style/Yb.Night.Text.Body"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:drawableTop="@drawable/yb_ic_guardian_home_video"
+                            android:drawablePadding="@dimen/yb_spacing_8"
+                            android:drawableTint="@color/yb_color_night_text_muted"
+                            android:gravity="center"
+                            android:lineSpacingExtra="4dp"
+                            android:text="等待患者画面"
+                            android:textColor="@color/yb_color_night_text_muted"
+                            android:textSize="16sp" />
+                    </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+            <!-- /guardian_main -->
         </FrameLayout>
-    </com.google.android.material.card.MaterialCardView>
+        <!-- /content_area -->
 
+        <!-- 控制按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/yb_spacing_20"
+            android:layout_marginEnd="@dimen/yb_spacing_20"
+            android:layout_marginVertical="@dimen/yb_spacing_8"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_guardian_view_video"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="@dimen/yb_spacing_4"
+                android:layout_weight="1"
+                android:text="查看画面"
+                android:textColor="@color/yb_color_night_text_primary"
+                android:textSize="13sp"
+                app:backgroundTint="@color/yb_color_primary"
+                app:cornerRadius="@dimen/yb_radius_medium"
+                app:icon="@drawable/yb_ic_guardian_home_video"
+                app:iconPadding="@dimen/yb_spacing_4"
+                app:iconTint="@color/yb_color_night_text_primary" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_guardian_go_chat"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="@dimen/yb_spacing_4"
+                android:layout_marginEnd="@dimen/yb_spacing_4"
+                android:layout_weight="1"
+                android:text="消息"
+                android:textColor="@color/yb_color_night_text_primary"
+                android:textSize="13sp"
+                app:cornerRadius="@dimen/yb_radius_medium"
+                app:icon="@drawable/yb_ic_guardian_home_message"
+                app:iconPadding="@dimen/yb_spacing_4"
+                app:iconTint="@color/yb_color_night_text_primary"
+                app:strokeColor="@color/yb_color_night_border_strong" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_guardian_audio_call"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="@dimen/yb_spacing_4"
+                android:layout_weight="1"
+                android:text="语音"
+                android:textColor="@color/yb_color_night_text_primary"
+                android:textSize="13sp"
+                app:cornerRadius="@dimen/yb_radius_medium"
+                app:icon="@drawable/yb_ic_guardian_home_call"
+                app:iconPadding="@dimen/yb_spacing_4"
+                app:iconTint="@color/yb_color_night_text_primary"
+                app:strokeColor="@color/yb_color_night_border_strong" />
         </LinearLayout>
-        <!-- /guardian_main -->
 
-    </FrameLayout>
-    <!-- /content_area -->
-
-    <!-- 控制按钮 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp" android:layout_marginEnd="16dp"
-        android:layout_marginVertical="8dp"
-        android:orientation="horizontal">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_guardian_view_video"
-            android:layout_width="0dp" android:layout_height="48dp"
-            android:layout_weight="1" android:layout_marginEnd="4dp"
-            android:text="📺 查看画面" android:textSize="13sp"
-            app:cornerRadius="16dp"
-            app:backgroundTint="@color/primary"
-            android:textColor="@color/on_primary" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_guardian_go_chat"
-            android:layout_width="0dp" android:layout_height="48dp"
-            android:layout_weight="1" android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:text="💬 消息" android:textSize="13sp"
-            app:cornerRadius="16dp" android:textColor="@color/primary"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_guardian_audio_call"
-            android:layout_width="0dp" android:layout_height="48dp"
-            android:layout_weight="1" android:layout_marginStart="4dp"
-            android:text="🎙️ 语音" android:textSize="13sp"
-            app:cornerRadius="16dp" android:textColor="@color/primary"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
-    </LinearLayout>
-
-    <!-- ═══════ 底部导航 ═══════ -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_nav"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/surface"
-        android:elevation="8dp"
-        app:menu="@menu/bottom_nav_guardian_menu"
-        app:labelVisibilityMode="labeled"
-        app:itemIconTint="@color/bottom_nav_icon_tint_selector"
-        app:itemTextColor="@color/bottom_nav_text_color_selector" />
+        <!-- ═══════ 底部导航 ═══════ -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_nav"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/yb_size_bottom_nav_height"
+            android:background="@drawable/yb_guardian_home_bg_bottom_nav"
+            android:elevation="0dp"
+            app:itemIconTint="@color/yb_guardian_bottom_nav_tint"
+            app:itemRippleColor="@color/yb_color_night_surface_pressed"
+            app:itemTextColor="@color/yb_guardian_bottom_nav_tint"
+            app:labelVisibilityMode="labeled"
+            app:menu="@menu/bottom_nav_guardian_menu" />
 
     </LinearLayout>
 

@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import com.google.android.material.R as MaterialR
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -53,6 +54,7 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
         super.onCreate(savedInstanceState)
         binding = ActivityGuardianBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyNightSystemBars()
 
         prefManager = PreferenceManager.getInstance(this)
         wsManager = WebSocketManager.getInstance()
@@ -60,6 +62,15 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
         setupBottomNav()
         initViews()
         connectWebSocket()
+    }
+
+    private fun applyNightSystemBars() {
+        window.statusBarColor = ContextCompat.getColor(this, R.color.yb_color_night_background_deep)
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.yb_color_night_background_deep)
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
+        }
     }
 
     private fun setupBottomNav() {
@@ -202,7 +213,7 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
             !connected -> {
                 dot.background.setTint(getColor(R.color.status_disconnected))
                 tv.text = "连接已断开"
-                tv.setTextColor(getColor(R.color.text_secondary))
+                tv.setTextColor(getColor(R.color.yb_color_night_text_secondary))
             }
             roomStatus == "paired" -> {
                 dot.background.setTint(getColor(R.color.status_online))
@@ -319,7 +330,7 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
         binding.ivVideo.visibility = View.VISIBLE
         binding.tvGuardianVideoPlaceholder.apply {
             visibility = View.VISIBLE
-            text = "📺\n正在连接摄像头..."
+            text = "正在连接摄像头..."
         }
         frameCount = 0
 
@@ -361,7 +372,7 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
         binding.ivVideo.visibility = View.GONE
         binding.tvGuardianVideoPlaceholder.apply {
             visibility = View.VISIBLE
-            text = "📺\n$message"
+            text = message
         }
     }
 
