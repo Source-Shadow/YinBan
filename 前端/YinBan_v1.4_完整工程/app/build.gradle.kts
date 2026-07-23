@@ -16,8 +16,8 @@ android {
         applicationId = "com.yinban.ai"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 5
+        versionName = "1.5.0"
 
         // BuildConfig 自定义字段
         buildConfigField("boolean", "SHOW_SERVER_CONFIG", "true")
