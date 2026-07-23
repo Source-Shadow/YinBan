@@ -31,3 +31,4 @@ venv/
 
 # 临时文件
 test.html
+.kotlin/
