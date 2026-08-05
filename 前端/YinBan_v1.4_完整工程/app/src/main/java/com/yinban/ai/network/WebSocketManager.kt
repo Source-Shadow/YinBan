@@ -18,6 +18,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
+import com.yinban.ai.config.AppConfig
 import okhttp3.*
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
@@ -30,9 +31,6 @@ class WebSocketManager private constructor() {
 
         /** 心跳间隔 (毫秒)，范围 [15000, 30000] */
         private const val PING_INTERVAL_MS = 20_000L
-
-        /** WebSocket 默认端口 */
-        private const val WS_PORT = 8000
 
         @Volatile
         private var INSTANCE: WebSocketManager? = null
@@ -176,9 +174,9 @@ class WebSocketManager private constructor() {
     // 内部实现
     // ═══════════════════════════════════════════
 
-    /** 构建 WebSocket URL: ws://<IP>:8000/ws?room=<room>&role=<role> */
+    /** 构建 WebSocket URL: ws://<IP>:<PORT>/ws?room=<room>&role=<role> */
     private fun buildWebSocketUrl(ip: String, room: String, role: String): String {
-        return "ws://$ip:$WS_PORT/ws?room=$room&role=$role"
+        return AppConfig.buildWsUrl(ip, room, role)
     }
 
     /** 创建 WebSocket 监听器 */

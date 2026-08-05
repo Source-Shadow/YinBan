@@ -20,6 +20,9 @@
     <!-- 音频输出（TTS 语音播报） -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
+    <!-- 录音权限（语音输入 STT） -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <!-- 振动反馈（SOS 按钮长按确认） -->
     <uses-permission android:name="android.permission.VIBRATE" />
 

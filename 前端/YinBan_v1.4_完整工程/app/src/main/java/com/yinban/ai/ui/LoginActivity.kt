@@ -53,11 +53,13 @@ class LoginActivity : AppCompatActivity() {
     // ═══════════════════════════════════════════
 
     private fun initBuildConfig() {
-        if (BuildConfig.SHOW_SERVER_CONFIG) {
-            binding.tilServerIp.visibility = View.VISIBLE
-            binding.etServerIp.setText(BuildConfig.WS_BASE_URL.replace("ws://", ""))
+        // 始终显示服务器 IP 输入框，方便用户动态配置
+        binding.tilServerIp.visibility = View.VISIBLE
+        val savedIp = prefManager.serverIp
+        if (savedIp.isNotBlank()) {
+            binding.etServerIp.setText(savedIp)
         } else {
-            binding.tilServerIp.visibility = View.GONE
+            binding.etServerIp.setText(BuildConfig.WS_BASE_URL.replace("ws://", ""))
         }
     }
 

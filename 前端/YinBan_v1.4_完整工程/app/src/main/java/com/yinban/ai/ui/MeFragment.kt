@@ -194,6 +194,31 @@ class MeFragment : Fragment() {
             applyNightDialogStyle(dialog, input)
         }
 
+        // ── 服务器 IP 设置 ──
+        binding.tvServerIpHint.text = pm.serverIp.ifBlank { "未设置 · 使用默认" }
+        binding.groupServerIp.setOnClickListener {
+            val input = EditText(requireContext())
+            input.hint = "例如: 192.168.1.8"
+            input.setText(pm.serverIp)
+            input.maxLines = 1
+            input.setPadding(32, 16, 32, 16)
+            val dialog = MaterialAlertDialogBuilder(requireContext())
+                .setTitle("服务器 IP 地址")
+                .setMessage("修改后需重新连接才能生效")
+                .setView(input)
+                .setPositiveButton("保存") { _, _ ->
+                    val newIp = input.text.toString().trim()
+                    if (newIp.isNotBlank()) {
+                        pm.serverIp = newIp
+                        binding.tvServerIpHint.text = newIp
+                        Toast.makeText(requireContext(), "服务器 IP 已更新，请重新登录", Toast.LENGTH_LONG).show()
+                    }
+                }
+                .setNegativeButton("取消", null)
+                .show()
+            applyNightDialogStyle(dialog, input)
+        }
+
         // ── 退出 ──
         binding.btnLogout.setOnClickListener { callback?.onLogout() }
     }

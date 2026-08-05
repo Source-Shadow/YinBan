@@ -25,7 +25,7 @@ class MjpegStreamer {
     companion object {
         private const val TAG = "MjpegStreamer"
         private const val CONNECT_TIMEOUT_SEC = 5L
-        private const val READ_TIMEOUT_SEC = 10L
+        private const val READ_TIMEOUT_SEC = 0L  // 0=无超时，MJPEG 长连接不断开
     }
 
     interface Callback {

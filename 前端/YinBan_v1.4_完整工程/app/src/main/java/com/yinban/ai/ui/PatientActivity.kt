@@ -5,10 +5,14 @@
 
 package com.yinban.ai.ui
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
@@ -17,6 +21,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.google.android.material.R as MaterialR
@@ -51,6 +56,8 @@ class PatientActivity : AppCompatActivity(),
     private var isPrivacyMode = false
     private var isVideoOn = false
     private var isAudioOn = false
+    private var sttHandler: Handler? = null
+    private var sttRunnable: Runnable? = null
 
     /** Snackbar 定位到顶部连接横幅下方，避免遮挡底部导航栏 */
     private fun snackbar(msg: String, dur: Int = Snackbar.LENGTH_SHORT): Snackbar {
@@ -201,14 +208,15 @@ class PatientActivity : AppCompatActivity(),
         isVideoOn = enabled
         if (enabled) {
             hardwareStream.startVideoStream()
-            val cameraUrl = getCameraStreamUrl()
-            wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("video", cameraUrl))
+            wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("video", ""))
             homeSnackbar("摄像头已开启，监护人可查看", Snackbar.LENGTH_SHORT).show()
         } else {
             hardwareStream.stopVideoStream()
             wsManager.sendMessage(MessageType.STREAM_STOP, StreamStopData("video"))
             homeSnackbar("摄像头已关闭", Snackbar.LENGTH_SHORT).show()
         }
+        // 自动上报设备状态，监护人端即时看到变化
+        sendDeviceStatus()
     }
 
     override fun onAudioToggle(enabled: Boolean) {
@@ -216,11 +224,87 @@ class PatientActivity : AppCompatActivity(),
         if (enabled) {
             hardwareStream.startAudioStream()
             wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("audio"))
-            homeSnackbar("麦克风已开启，监护人可听到", Snackbar.LENGTH_SHORT).show()
+            homeSnackbar("麦克风已开启，语音将实时转录", Snackbar.LENGTH_SHORT).show()
+            startContinuousStt()
         } else {
             hardwareStream.stopAudioStream()
             wsManager.sendMessage(MessageType.STREAM_STOP, StreamStopData("audio"))
             homeSnackbar("麦克风已关闭", Snackbar.LENGTH_SHORT).show()
+            stopContinuousStt()
+        }
+        sendDeviceStatus()
+    }
+
+    // ═══════════════════════════════════════════
+    // 持续语音识别（系统语音输入，不依赖 Google）
+    // ═══════════════════════════════════════════
+
+    private val RECORD_AUDIO_REQ = 2001
+    private val STT_REQUEST_CODE = 2002
+
+    private fun startContinuousStt() {
+        val perm = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+        if (perm != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), RECORD_AUDIO_REQ)
+            homeSnackbar("需要录音权限，请授权后重新开启麦克风", Snackbar.LENGTH_LONG).show()
+            return
+        }
+
+        sttHandler = Handler(Looper.getMainLooper())
+        sttRunnable = object : Runnable {
+            override fun run() {
+                if (!isAudioOn) return
+                try {
+                    val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "zh-CN")
+                        putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+                        putExtra(RecognizerIntent.EXTRA_PROMPT, "请说话，语音将转录给监护人")
+                    }
+                    startActivityForResult(intent, STT_REQUEST_CODE)
+                } catch (e: Exception) {
+                    Log.e(TAG, "STT: 启动失败 ${e.message}")
+                    homeSnackbar("语音识别不可用: ${e.message}", Snackbar.LENGTH_SHORT).show()
+                }
+            }
+        }
+        sttHandler?.post(sttRunnable!!)
+        Log.i(TAG, "STT: 持续语音识别已启动（每8秒）")
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == STT_REQUEST_CODE) {
+            if (resultCode == RESULT_OK && data != null) {
+                val matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                val text = matches?.firstOrNull()?.trim()
+                if (!text.isNullOrBlank() && wsManager.isConnected()) {
+                    wsManager.sendMessage(MessageType.AUDIO_TRANSCRIPT,
+                        mapOf("text" to text, "timestamp" to java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())))
+                    Log.i(TAG, "STT: 识别成功 -> $text")
+                    runOnUiThread {
+                        homeSnackbar("已转录: $text", Snackbar.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Log.d(TAG, "STT: 未识别到语音或已取消 (resultCode=$resultCode)")
+            }
+            // 每 8 秒触发下一次
+            if (isAudioOn) sttHandler?.postDelayed(sttRunnable!!, 8000)
+        }
+    }
+
+    private fun stopContinuousStt() {
+        sttHandler?.removeCallbacks(sttRunnable ?: return)
+        sttRunnable = null
+        sttHandler = null
+        Log.i(TAG, "STT: 持续语音识别已停止")
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == RECORD_AUDIO_REQ && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (isAudioOn) startContinuousStt()
         }
     }
 
@@ -281,7 +365,8 @@ class PatientActivity : AppCompatActivity(),
         startActivity(Intent(this, VideoCallActivity::class.java).apply {
             putExtra(VideoCallActivity.EXTRA_CALL_TYPE, "video")
             putExtra(VideoCallActivity.EXTRA_ROOM, prefManager.room)
-            putExtra(VideoCallActivity.EXTRA_STREAM_URL, getCameraStreamUrl())
+            putExtra(VideoCallActivity.EXTRA_PRIMARY_SOURCE, prefManager.primaryCamera)
+            // stream_url 由 VideoCallActivity 根据 CameraSource 自动构建
         })
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
@@ -427,7 +512,7 @@ class PatientActivity : AppCompatActivity(),
 
     private fun handleDangerDetected(msg: YinBanMessage) {
         val data = gson.fromJson(gson.toJson(msg.data), DangerDetectedData::class.java)
-        val shouldSos = data.confidence > 0.7f
+        val shouldSos = data.confidence > 0.7f || data.dangerLevel == "danger"
         runOnUiThread {
             snackbar("⚠️ ${data.message}", Snackbar.LENGTH_LONG).show()
             if (shouldSos) triggerSos(isAutoDetected = true)
@@ -449,10 +534,12 @@ class PatientActivity : AppCompatActivity(),
 
     private fun handleChatAiResponse(msg: YinBanMessage) {
         val data = gson.fromJson(gson.toJson(msg.data), ChatAiResponseData::class.java)
-        val shouldSos = data.isDanger
+        // 优先使用新协议 guidance 字段，向下兼容 reply
+        val guidance = data.guidance.ifBlank { data.reply }
+        val isDanger = data.dangerLevel in listOf("warning", "danger") || data.isDanger
         runOnUiThread {
-            snackbar("🤖 小影火: ${data.reply.take(60)}...", Snackbar.LENGTH_SHORT).show()
-            if (shouldSos) triggerSos(isAutoDetected = true)
+            snackbar("🤖 小影火: ${guidance.take(60)}...", Snackbar.LENGTH_SHORT).show()
+            if (isDanger) triggerSos(isAutoDetected = true)
         }
     }
 
@@ -475,23 +562,25 @@ class PatientActivity : AppCompatActivity(),
 
     private fun handleStreamStatus(msg: YinBanMessage) {
         val data = gson.fromJson(gson.toJson(msg.data), StreamStatusData::class.java)
-        if (data.streamType == "video") {
-            val active = data.status == "live"
-            runOnUiThread {
-                if (isVideoOn != active) {
+        val active = data.status == "live"
+        runOnUiThread {
+            when (data.streamType) {
+                "video" -> {
                     isVideoOn = active
-                    // 同步 HomeFragment 开关状态
-                    if (homeFragment?.isAdded == true && !homeFragment!!.isDetached) {
-                        homeFragment?.updateStandbyUI(getConnectionState())
-                    }
+                    homeFragment?.syncSwitchState("video", active)
                 }
-                val statusText = when (data.status) {
-                    "live" -> "视频流已就绪"
-                    "stopped" -> "视频流已停止"
-                    else -> "视频流状态: ${data.status}"
+                "audio" -> {
+                    isAudioOn = active
+                    homeFragment?.syncSwitchState("audio", active)
                 }
-                snackbar(statusText, Snackbar.LENGTH_SHORT).show()
             }
+            val label = if (data.streamType == "video") "视频" else "麦克风"
+            val statusText = when (data.status) {
+                "live" -> "${label}流已就绪"
+                "stopped" -> "${label}流已停止"
+                else -> "${label}流状态: ${data.status}"
+            }
+            snackbar(statusText, Snackbar.LENGTH_SHORT).show()
         }
     }
 
@@ -534,16 +623,11 @@ class PatientActivity : AppCompatActivity(),
         wsManager.sendMessage(MessageType.LOCATION_UPDATE,
             LocationUpdateData(fuzzed.lat, fuzzed.lng, 5f, false, true))
         hardwareStream.startVideoStream()
-        val cameraUrl = getCameraStreamUrl()
-        wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("video", cameraUrl))
+        // 不再发送 stream_url，后端从 MJPEG_STREAM_URL 环境变量读取
+        wsManager.sendMessage(MessageType.STREAM_START, StreamStartData("video", ""))
         isStreaming = true
         binding.root.announceForAccessibility("紧急求助已发送")
         snackbar("🆘 紧急求助已发送！监护人已收到警报", Snackbar.LENGTH_LONG).show()
-    }
-
-    /** 获取摄像头推流地址（患者端可配置，默认 ESP32 热点 IP） */
-    private fun getCameraStreamUrl(): String {
-        return prefManager.cameraUrl.ifBlank { "http://10.240.11.161:5000/video_feed" }
     }
 
     private fun startCall(callType: String) {
@@ -555,7 +639,8 @@ class PatientActivity : AppCompatActivity(),
         startActivity(Intent(this, VideoCallActivity::class.java).apply {
             putExtra(VideoCallActivity.EXTRA_CALL_TYPE, callType)
             putExtra(VideoCallActivity.EXTRA_ROOM, prefManager.room)
-            putExtra(VideoCallActivity.EXTRA_STREAM_URL, getCameraStreamUrl())
+            putExtra(VideoCallActivity.EXTRA_PRIMARY_SOURCE, prefManager.primaryCamera)
+            // stream_url 由 VideoCallActivity 根据 CameraSource 自动构建
         })
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
@@ -574,6 +659,7 @@ class PatientActivity : AppCompatActivity(),
 
     override fun onDestroy() {
         super.onDestroy()
+        stopContinuousStt()
         timerHandler.removeCallbacks(standbyTimer)
         wsManager.removeMessageListener(msgListener)
         tts?.stop(); tts?.shutdown()

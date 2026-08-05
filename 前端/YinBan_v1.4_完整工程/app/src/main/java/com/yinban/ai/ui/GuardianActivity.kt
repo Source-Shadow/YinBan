@@ -21,10 +21,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.yinban.ai.R
+import com.yinban.ai.config.CameraSource
 import com.yinban.ai.databinding.ActivityGuardianBinding
 import com.yinban.ai.hardware.MjpegStreamer
 import com.yinban.ai.network.*
 import com.yinban.ai.storage.PreferenceManager
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.util.concurrent.TimeUnit
 
 class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
 
@@ -41,9 +45,19 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
     private var roomStatus: String = "disconnected"
     private var meFragment: MeFragment? = null
 
+    // ★ 摄像头来源追踪
+    private var currentCameraSource: CameraSource = CameraSource.DEFAULT
+    private var usingFallback: Boolean = false
+
     // ★ MJPEG 流播放器（替代 WebView）
     private val mjpegStreamer = MjpegStreamer()
     private var frameCount = 0
+
+    // ★ 连通性探测专用短超时 client
+    private val probeClient = OkHttpClient.Builder()
+        .connectTimeout(3, TimeUnit.SECONDS)
+        .readTimeout(3, TimeUnit.SECONDS)
+        .build()
 
     private fun snackbar(msg: String, dur: Int = Snackbar.LENGTH_SHORT): Snackbar {
         return Snackbar.make(binding.root, msg, dur)
@@ -132,7 +146,7 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
         // SOS 面板
         binding.btnSosViewVideo.setOnClickListener {
             currentStreamUrl?.let {
-                startMjpegStream(it)
+                startMjpegWithFallback(it)
                 Log.i(TAG, "[Video] 查看 SOS 实时画面: $it")
             } ?: snackbar("暂无视频流地址", Snackbar.LENGTH_SHORT).show()
         }
@@ -147,6 +161,17 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
             wsManager.sendMessage(MessageType.DEVICE_CONTROL_REQUEST,
                 DeviceControlRequestData("camera", "on", "guardian"))
             snackbar("已发送画面请求", Snackbar.LENGTH_SHORT).show()
+        }
+
+        // 生成报告
+        binding.btnGenerateReport.setOnClickListener {
+            if (!wsManager.isConnected()) {
+                snackbar("未连接服务器", Snackbar.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            wsManager.sendMessage(MessageType.GENERATE_REPORT_REQUEST,
+                mapOf("room" to prefManager.room))
+            snackbar("正在生成报告...", Snackbar.LENGTH_SHORT).show()
         }
 
         // 消息模块
@@ -181,6 +206,8 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
                 MessageType.SOS_ALERT -> handleSosAlert(message)
                 MessageType.CALL_REQUEST -> handleCallRequest(message)
                 MessageType.DANGER_DETECTED -> handleDangerDetected(message)
+                MessageType.GENERATE_REPORT_RESPONSE -> handleReportResponse(message)
+                MessageType.AUDIO_TRANSCRIPT -> handleAudioTranscript(message)
                 else -> {}
             }
         }
@@ -265,6 +292,9 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
             binding.tvCameraStatus.text = if (data.camera) "摄像头: 🟢" else "摄像头: ⚪"
             binding.tvCameraStatus.setTextColor(
                 getColor(if (data.camera) R.color.status_online_text else R.color.text_secondary))
+            binding.tvMicrophoneStatus.text = if (data.microphone) "麦克风: 🟢" else "麦克风: ⚪"
+            binding.tvMicrophoneStatus.setTextColor(
+                getColor(if (data.microphone) R.color.status_online_text else R.color.text_secondary))
             binding.tvHeadphoneStatus.text = if (data.headphone) "耳机: 🟢" else "耳机: ⚪"
             binding.tvHeadphoneStatus.setTextColor(
                 getColor(if (data.headphone) R.color.status_online_text else R.color.text_secondary))
@@ -292,26 +322,33 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
     }
 
     // ═══════════════════════════════════════════
-    // ★ 视频流 — 使用 MJPEG ImageView（替代 WebView）
+    // ★ 视频流 — MJPEG ImageView + 双源兜底
     // ═══════════════════════════════════════════
 
     private fun handleStreamUrl(msg: YinBanMessage) {
         val data = gson.fromJson(gson.toJson(msg.data), StreamUrlData::class.java)
         currentStreamUrl = data.url
         Log.i(TAG, "[Video] 收到推流地址: ${data.url}")
-        runOnUiThread { startMjpegStream(data.url) }
+        runOnUiThread { startMjpegWithFallback(data.url) }
     }
 
     private fun handleStreamStatus(msg: YinBanMessage) {
         val data = gson.fromJson(gson.toJson(msg.data), StreamStatusData::class.java)
         runOnUiThread {
+            // 音频流状态 → Snackbar 反馈
+            if (data.streamType == "audio") {
+                if (data.status == "live") snackbar("🎤 患者麦克风已开启，语音转录中", Snackbar.LENGTH_SHORT).show()
+                else snackbar("🔇 患者麦克风已关闭", Snackbar.LENGTH_SHORT).show()
+                return@runOnUiThread
+            }
+            // 视频流状态
             when (data.status) {
                 "live" -> {
                     if (data.url.isNotBlank()) {
                         currentStreamUrl = data.url
-                        startMjpegStream(data.url)
+                        startMjpegWithFallback(data.url)
                     } else if (currentStreamUrl != null) {
-                        startMjpegStream(currentStreamUrl!!)
+                        startMjpegWithFallback(currentStreamUrl!!)
                     }
                 }
                 "stopped" -> {
@@ -319,9 +356,53 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
                     binding.ivVideo.visibility = View.GONE
                     showVideoPlaceholder("摄像头已关闭")
                 }
-                "error" -> {
-                    showVideoPlaceholder("视频流错误")
-                }
+                "error" -> showVideoPlaceholder("视频流错误")
+            }
+        }
+    }
+
+    /**
+     * 启动 MJPEG 预览流，优先尝试主摄像头，失败则自动切换到兜底摄像头。
+     * 如果传入的 URL 是服务器下发的（非本地构建），直接使用 URL 但跟踪来源。
+     */
+    private fun startMjpegWithFallback(url: String) {
+        val primarySource = CameraSource.fromKey(prefManager.primaryCamera)
+        val fallbackSource = CameraSource.fallbackOf(primarySource)
+        val ip = extractIpFromUrl(url) ?: prefManager.serverIp
+
+        // 先用服务器给的 URL
+        currentStreamUrl = url
+        currentCameraSource = detectSourceFromUrl(url)
+        usingFallback = false
+
+        binding.ivVideo.visibility = View.VISIBLE
+        binding.tvGuardianVideoPlaceholder.apply {
+            visibility = View.VISIBLE
+            text = "正在连接 ${currentCameraSource.displayName}..."
+        }
+        frameCount = 0
+
+        if (probeUrl(url)) {
+            startMjpegStream(url)
+            Log.i(TAG, "[Video] 主路可用 → ${currentCameraSource.displayName}: $url")
+        } else {
+            // 尝试构建兜底 URL
+            val fallbackUrl = fallbackSource.buildUrl(ip)
+            Log.w(TAG, "[Video] 主路不可达: $url，尝试兜底: $fallbackUrl")
+
+            binding.tvGuardianVideoPlaceholder.text = "尝试连接 ${fallbackSource.displayName}..."
+
+            if (probeUrl(fallbackUrl)) {
+                currentStreamUrl = fallbackUrl
+                currentCameraSource = fallbackSource
+                usingFallback = true
+                startMjpegStream(fallbackUrl)
+                Toast.makeText(this, "已自动切换到 ${fallbackSource.displayName}", Toast.LENGTH_LONG).show()
+                Log.i(TAG, "[Video] 兜底可用 → ${fallbackSource.displayName}: $fallbackUrl")
+            } else {
+                // 两路都不通，用原始 URL 尝试连接（让用户看到具体错误）
+                Log.w(TAG, "[Video] 两路均不可达，回退到原始 URL")
+                startMjpegStream(url)
             }
         }
     }
@@ -330,14 +411,12 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
         binding.ivVideo.visibility = View.VISIBLE
         binding.tvGuardianVideoPlaceholder.apply {
             visibility = View.VISIBLE
-            text = "正在连接摄像头..."
         }
-        frameCount = 0
 
         mjpegStreamer.stop()  // 先停掉之前的流
         mjpegStreamer.start(url, object : MjpegStreamer.Callback {
             override fun onConnected() {
-                Log.i(TAG, "[Video] MJPEG 已连接")
+                Log.i(TAG, "[Video] MJPEG 已连接 (${currentCameraSource.displayName})")
                 runOnUiThread {
                     binding.tvGuardianVideoPlaceholder.visibility = View.GONE
                 }
@@ -346,18 +425,33 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
             override fun onFrame(bitmap: Bitmap) {
                 frameCount++
                 if (frameCount % 30 == 0) {
-                    Log.d(TAG, "[Video] 已接收 $frameCount 帧")
+                    Log.d(TAG, "[Video] 已接收 $frameCount 帧 (${currentCameraSource.displayName})")
                 }
                 binding.ivVideo.setImageBitmap(bitmap)
             }
 
             override fun onError(message: String) {
-                Log.e(TAG, "[Video] MJPEG 错误: $message")
-                runOnUiThread { showVideoPlaceholder("视频流连接失败\n$message") }
+                Log.e(TAG, "[Video] MJPEG 错误 (${currentCameraSource}): $message")
+                runOnUiThread {
+                    // ★ 如果主路出错还没试过兜底，自动切换
+                    if (!usingFallback) {
+                        val fallbackSource = CameraSource.fallbackOf(currentCameraSource)
+                        val ip = prefManager.serverIp
+                        val fallbackUrl = fallbackSource.buildUrl(ip)
+                        Log.i(TAG, "[Video] 主路出错，自动尝试兜底: $fallbackUrl")
+                        currentCameraSource = fallbackSource
+                        currentStreamUrl = fallbackUrl
+                        usingFallback = true
+                        binding.tvGuardianVideoPlaceholder.text = "正在连接 ${fallbackSource.displayName}..."
+                        startMjpegStream(fallbackUrl)
+                        return@runOnUiThread
+                    }
+                    showVideoPlaceholder("视频流连接失败\n$message")
+                }
             }
 
             override fun onDisconnected() {
-                Log.i(TAG, "[Video] MJPEG 已断开")
+                Log.i(TAG, "[Video] MJPEG 已断开 (${currentCameraSource})")
                 runOnUiThread {
                     if (currentStreamUrl != null) {
                         showVideoPlaceholder("视频流已断开")
@@ -373,6 +467,73 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
         binding.tvGuardianVideoPlaceholder.apply {
             visibility = View.VISIBLE
             text = message
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 音频转录
+    // ═══════════════════════════════════════════
+
+    private val transcriptLog = mutableListOf<String>()
+
+    private fun handleAudioTranscript(msg: YinBanMessage) {
+        val data = gson.fromJson(gson.toJson(msg.data), AudioTranscriptData::class.java)
+        val text = data.text
+        runOnUiThread {
+            // 保留最近 20 条转录
+            transcriptLog.add(text)
+            if (transcriptLog.size > 20) transcriptLog.removeAt(0)
+
+            // 更新"最近消息"栏
+            val now = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+                .format(java.util.Date())
+            binding.tvPatientMessage.text = "🎤 [$now] $text"
+            binding.tvPatientMessage.setTextColor(getColor(R.color.status_online_text))
+
+            // Snackbar 底部弹出
+            snackbar("💬 患者语音: $text", Snackbar.LENGTH_LONG).show()
+            // Toast 顶部弹出，双保险确保看见
+            Toast.makeText(this@GuardianActivity, "🎤 患者: $text", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // ★ 连通性探测 & URL 工具
+    // ═══════════════════════════════════════════
+
+    /** 用短超时 HTTP HEAD 请求探测 URL 是否可达 */
+    private fun probeUrl(url: String, timeoutMs: Long = 3000): Boolean {
+        val client = if (timeoutMs == 3000L) probeClient else {
+            OkHttpClient.Builder()
+                .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+                .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+                .build()
+        }
+        return try {
+            val request = Request.Builder().url(url).head().build()
+            val response = client.newCall(request).execute()
+            val ok = response.isSuccessful
+            response.close()
+            ok
+        } catch (e: Exception) {
+            Log.d(TAG, "[Probe] $url 不可达: ${e.message}")
+            false
+        }
+    }
+
+    /** 从 URL 中提取 IP 地址 */
+    private fun extractIpFromUrl(url: String): String? {
+        return try {
+            val host = java.net.URL(url).host
+            if (host.isNotBlank()) host else null
+        } catch (_: Exception) { null }
+    }
+
+    /** 根据 URL 特征推测摄像头来源 */
+    private fun detectSourceFromUrl(url: String): CameraSource {
+        return when {
+            url.contains(":81") || url.contains("/stream") -> CameraSource.ESP32_FISHEYE
+            else -> CameraSource.IP_WEBCAM
         }
     }
 
@@ -394,7 +555,7 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
             binding.tvLocationAccuracy.text = "⚠️ SOS紧急定位"
 
             if (data.streamUrl.isNotBlank()) {
-                startMjpegStream(data.streamUrl)
+                startMjpegWithFallback(data.streamUrl)
             }
 
             binding.root.announceForAccessibility("收到紧急求助！")
@@ -418,7 +579,7 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
                     startActivity(Intent(this@GuardianActivity, VideoCallActivity::class.java).apply {
                         putExtra(VideoCallActivity.EXTRA_CALL_TYPE, data.callType)
                         putExtra(VideoCallActivity.EXTRA_ROOM, prefManager.room)
-                        // ★ 传入当前推流地址
+                        putExtra(VideoCallActivity.EXTRA_PRIMARY_SOURCE, prefManager.primaryCamera)
                         currentStreamUrl?.let { putExtra(VideoCallActivity.EXTRA_STREAM_URL, it) }
                     })
                     overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
@@ -436,12 +597,38 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
 
     private fun handleDangerDetected(msg: YinBanMessage) {
         val data = gson.fromJson(gson.toJson(msg.data), DangerDetectedData::class.java)
-        Log.w(TAG, "⚠️ 小影火检测到风险: ${data.message}")
+        val levelLabel = when (data.dangerLevel) {
+            "danger" -> "🔴 危险"
+            "warning" -> "🟡 注意"
+            else -> "⚠️ 提醒"
+        }
+        val tagsInfo = if (data.visualTags.isNotEmpty()) " | 环境: ${data.visualTags.joinToString(", ")}" else ""
+        Log.w(TAG, "$levelLabel 小影火检测到风险: ${data.message}$tagsInfo")
         runOnUiThread {
             binding.cardSosAlert.visibility = View.VISIBLE
-            binding.tvSosMessage.text = "🔥 小影火: ${data.message}"
-            binding.tvSosLocation.text = "AI 自动检测"
-            snackbar("⚠️ 小影火检测到潜在风险！", Snackbar.LENGTH_LONG).show()
+            binding.tvSosMessage.text = "🔥 小影火 $levelLabel: ${data.message}$tagsInfo"
+            binding.tvSosLocation.text = "AI 自动检测 | 置信度: ${"%.0f".format(data.confidence * 100)}%"
+            snackbar("$levelLabel 小影火检测到潜在风险！", Snackbar.LENGTH_LONG).show()
+        }
+    }
+
+    // ═══════════════════════════════════════════
+    // 报告生成
+    // ═══════════════════════════════════════════
+
+    private fun handleReportResponse(msg: YinBanMessage) {
+        val data = gson.fromJson(gson.toJson(msg.data), GenerateReportResponseData::class.java)
+        runOnUiThread {
+            if (data.logCount == 0) {
+                snackbar(data.report, Snackbar.LENGTH_LONG).show()
+                return@runOnUiThread
+            }
+            MaterialAlertDialogBuilder(this@GuardianActivity)
+                .setTitle("📋 患者行为分析报告")
+                .setMessage("${data.report}\n\n— 基于最近 ${data.logCount} 条事件记录 | ${data.generatedAt}")
+                .setPositiveButton("我知道了") { _, _ -> }
+                .show()
+            snackbar("报告已生成 (${data.logCount} 条记录)", Snackbar.LENGTH_SHORT).show()
         }
     }
 
@@ -458,6 +645,7 @@ class GuardianActivity : AppCompatActivity(), MeFragment.MeCallback {
         startActivity(Intent(this, VideoCallActivity::class.java).apply {
             putExtra(VideoCallActivity.EXTRA_CALL_TYPE, callType)
             putExtra(VideoCallActivity.EXTRA_ROOM, prefManager.room)
+            putExtra(VideoCallActivity.EXTRA_PRIMARY_SOURCE, prefManager.primaryCamera)
             currentStreamUrl?.let { putExtra(VideoCallActivity.EXTRA_STREAM_URL, it) }
         })
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)

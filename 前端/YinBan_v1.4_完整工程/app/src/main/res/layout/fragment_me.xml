@@ -304,6 +304,95 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- 服务器设置 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/yb_spacing_16"
+            app:cardBackgroundColor="@color/yb_color_night_surface"
+            app:cardCornerRadius="@dimen/yb_radius_large"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/yb_color_night_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/yb_spacing_20">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="@dimen/yb_size_icon"
+                        android:layout_height="@dimen/yb_size_icon"
+                        android:contentDescription="@null"
+                        android:src="@drawable/yb_ic_me_settings"
+                        app:tint="@color/yb_color_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/yb_spacing_8"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="服务器设置"
+                        android:textColor="@color/yb_color_night_text_secondary"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/group_server_ip"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/yb_spacing_12"
+                    android:clickable="true"
+                    android:contentDescription="点击设置服务器IP地址"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:minHeight="64dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="WebSocket 服务器"
+                            android:textColor="@color/yb_color_night_text_primary"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tv_server_ip_hint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="未设置"
+                            android:textColor="@color/yb_color_night_text_muted"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="@dimen/yb_size_icon"
+                        android:layout_height="@dimen/yb_size_icon"
+                        android:layout_marginStart="@dimen/yb_spacing_16"
+                        android:contentDescription="@null"
+                        android:src="@drawable/yb_ic_me_edit"
+                        app:tint="@color/yb_color_night_text_secondary" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- 关于 -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

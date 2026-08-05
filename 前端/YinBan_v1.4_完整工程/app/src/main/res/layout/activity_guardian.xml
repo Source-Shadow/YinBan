@@ -285,19 +285,33 @@
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
                                 android:background="@drawable/yb_guardian_home_bg_inner_panel"
-                                android:padding="@dimen/yb_spacing_12"
-                                android:text="摄像头: --" />
+                                android:padding="@dimen/yb_spacing_8"
+                                android:text="摄像头: --"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/tv_microphone_status"
+                                style="@style/Yb.Night.Text.BodySecondary"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/yb_guardian_home_bg_inner_panel"
+                                android:padding="@dimen/yb_spacing_8"
+                                android:text="麦克风: --"
+                                android:textSize="12sp" />
 
                             <TextView
                                 android:id="@+id/tv_headphone_status"
                                 style="@style/Yb.Night.Text.BodySecondary"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/yb_spacing_8"
+                                android:layout_marginStart="4dp"
                                 android:layout_weight="1"
                                 android:background="@drawable/yb_guardian_home_bg_inner_panel"
-                                android:padding="@dimen/yb_spacing_12"
-                                android:text="耳机: --" />
+                                android:padding="@dimen/yb_spacing_8"
+                                android:text="耳机: --"
+                                android:textSize="12sp" />
                         </LinearLayout>
 
                         <TextView
@@ -370,6 +384,24 @@
             <!-- /guardian_main -->
         </FrameLayout>
         <!-- /content_area -->
+
+        <!-- 生成报告按钮 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_generate_report"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginStart="@dimen/yb_spacing_20"
+            android:layout_marginEnd="@dimen/yb_spacing_20"
+            android:layout_marginTop="@dimen/yb_spacing_4"
+            android:text="📋 生成行为分析报告"
+            android:textColor="@color/yb_color_night_text_secondary"
+            android:textSize="13sp"
+            app:cornerRadius="@dimen/yb_radius_medium"
+            app:icon="@drawable/yb_ic_me_info"
+            app:iconPadding="@dimen/yb_spacing_8"
+            app:iconTint="@color/yb_color_night_text_secondary"
+            app:strokeColor="@color/yb_color_night_border_strong" />
 
         <!-- 控制按钮 -->
         <LinearLayout

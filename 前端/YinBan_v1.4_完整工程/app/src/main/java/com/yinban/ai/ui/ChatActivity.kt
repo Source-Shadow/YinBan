@@ -5,13 +5,19 @@
 
 package com.yinban.ai.ui
 
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,6 +49,8 @@ class ChatActivity : AppCompatActivity() {
     private var isVoiceRecording = false
     private var tts: TextToSpeech? = null
     private var isTtsReady = false
+    private var speechRecognizer: SpeechRecognizer? = null
+    private var isListening = false
     private val historyItems = mutableListOf<ChatHistoryItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -219,15 +227,18 @@ class ChatActivity : AppCompatActivity() {
 
     private fun handleAiResponse(message: YinBanMessage) {
         val data = gson.fromJson(gson.toJson(message.data), ChatAiResponseData::class.java)
+        // 优先使用新协议 guidance 字段，向下兼容 reply
+        val guidance = data.guidance.ifBlank { data.reply }
+        val isDanger = data.dangerLevel in listOf("warning", "danger") || data.isDanger
         runOnUiThread {
             adapter.removeThinkingIndicator()
-            adapter.addMessage(ChatMessage.AiMessage(data.reply))
+            adapter.addMessage(ChatMessage.AiMessage(guidance))
             saveHistory()
             scrollToBottom()
             if (isTtsReady && tts != null) {
-                tts?.speak(data.reply, TextToSpeech.QUEUE_FLUSH, null, "ai_reply_${System.currentTimeMillis()}")
+                tts?.speak(guidance, TextToSpeech.QUEUE_FLUSH, null, "ai_reply_${System.currentTimeMillis()}")
             }
-            if (data.isDanger) {
+            if (isDanger) {
                 Toast.makeText(this, "⚠️ 小影火检测到潜在风险", Toast.LENGTH_LONG).show()
             }
         }
@@ -320,31 +331,117 @@ class ChatActivity : AppCompatActivity() {
     }
 
     // ═══════════════════════════════════════════
-    // 语音输入（占位 → 后续接入 SpeechRecognizer）
+    // 语音输入（Android SpeechRecognizer）
     // ═══════════════════════════════════════════
 
-    private fun handleVoice(event: MotionEvent): Boolean {
-        when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                isVoiceRecording = true
-                updateVoiceButtonVisual(true)
-                Toast.makeText(this, "🎤 录音中...", Toast.LENGTH_SHORT).show()
-            }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                if (isVoiceRecording) {
-                    isVoiceRecording = false
-                    updateVoiceButtonVisual(false)
-                    if (chatMode == "ai") {
-                        binding.etChatInput.setText("你好")
-                        sendText()
-                    } else {
-                        val msg = "[语音消息]"
-                        wsManager.sendMessage(MessageType.MANUAL_MESSAGE, ManualMessageData(msg, myRole))
-                        adapter.addMessage(ChatMessage.SelfMessage(msg))
-                        saveHistory()
-                        scrollToBottom()
+    private val AUDIO_PERMISSION_REQUEST = 1001
+
+    private fun ensureAudioPermission(): Boolean {
+        val granted = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+        if (granted == PackageManager.PERMISSION_GRANTED) return true
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(Manifest.permission.RECORD_AUDIO),
+            AUDIO_PERMISSION_REQUEST
+        )
+        return false
+    }
+
+    private fun startVoiceRecognition() {
+        if (!ensureAudioPermission()) {
+            Toast.makeText(this, "需要录音权限才能使用语音输入", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (SpeechRecognizer.isRecognitionAvailable(this).not()) {
+            Toast.makeText(this, "当前设备不支持语音识别", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (speechRecognizer == null) {
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+            speechRecognizer?.setRecognitionListener(object : android.speech.RecognitionListener {
+                override fun onReadyForSpeech(params: Bundle?) {
+                    isListening = true
+                    runOnUiThread {
+                        Toast.makeText(this@ChatActivity, "🎤 正在聆听...", Toast.LENGTH_SHORT).show()
                     }
                 }
+
+                override fun onBeginningOfSpeech() {}
+
+                override fun onRmsChanged(rmsdB: Float) {}
+
+                override fun onBufferReceived(buffer: ByteArray?) {}
+
+                override fun onEndOfSpeech() {
+                    isListening = false
+                    runOnUiThread { updateVoiceButtonVisual(false) }
+                }
+
+                override fun onError(error: Int) {
+                    isListening = false
+                    runOnUiThread {
+                        updateVoiceButtonVisual(false)
+                        val msg = when (error) {
+                            SpeechRecognizer.ERROR_AUDIO -> "音频录制错误"
+                            SpeechRecognizer.ERROR_CLIENT -> "客户端错误"
+                            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "权限不足"
+                            SpeechRecognizer.ERROR_NETWORK -> "网络错误，请检查连接"
+                            SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "网络超时"
+                            SpeechRecognizer.ERROR_NO_MATCH -> "未识别到语音，请再说一遍"
+                            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "语音引擎忙碌"
+                            SpeechRecognizer.ERROR_SERVER -> "服务器错误"
+                            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "语音超时，未检测到说话内容"
+                            else -> "语音识别失败 (code=$error)"
+                        }
+                        Toast.makeText(this@ChatActivity, msg, Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onResults(results: Bundle?) {
+                    isListening = false
+                    val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                    val spokenText = matches?.firstOrNull()?.trim()
+                    runOnUiThread {
+                        updateVoiceButtonVisual(false)
+                        if (!spokenText.isNullOrBlank()) {
+                            binding.etChatInput.setText(spokenText)
+                            sendText()
+                        } else {
+                            Toast.makeText(this@ChatActivity, "未识别到语音内容", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+
+                override fun onPartialResults(partialResults: Bundle?) {}
+                override fun onEvent(eventType: Int, params: Bundle?) {}
+            })
+        }
+
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "zh-CN")
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "zh-CN")
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "说出你想说的话...")
+        }
+        speechRecognizer?.startListening(intent)
+    }
+
+    private fun stopVoiceRecognition() {
+        speechRecognizer?.stopListening()
+        isListening = false
+    }
+
+    private fun handleVoice(event: MotionEvent): Boolean {
+        // 仅在手指抬起时触发，避免与系统语音对话框手势冲突
+        if (event.action == MotionEvent.ACTION_UP) {
+            if (!isListening) {
+                isVoiceRecording = true
+                updateVoiceButtonVisual(true)
+                startVoiceRecognition()
             }
         }
         return true
@@ -450,6 +547,8 @@ class ChatActivity : AppCompatActivity() {
         super.onDestroy()
         saveHistory()
         wsManager.removeMessageListener(msgListener)
+        speechRecognizer?.destroy()
+        speechRecognizer = null
         tts?.stop()
         tts?.shutdown()
     }
