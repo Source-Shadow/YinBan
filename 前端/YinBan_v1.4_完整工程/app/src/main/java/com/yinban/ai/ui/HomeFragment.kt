@@ -107,6 +107,27 @@ class HomeFragment : Fragment() {
         b.tvStandbySubtitle.text = state.standbySubtitle
     }
 
+    /** 服务器状态回执时同步开关 UI，避免状态不一致 */
+    fun syncSwitchState(type: String, active: Boolean) {
+        val b = binding ?: return
+        when (type) {
+            "video" -> {
+                b.switchVideo.setOnCheckedChangeListener(null)
+                b.switchVideo.isChecked = active
+                b.switchVideo.setOnCheckedChangeListener { _, checked ->
+                    callback?.onVideoToggle(checked)
+                }
+            }
+            "audio" -> {
+                b.switchAudio.setOnCheckedChangeListener(null)
+                b.switchAudio.isChecked = active
+                b.switchAudio.setOnCheckedChangeListener { _, checked ->
+                    callback?.onAudioToggle(checked)
+                }
+            }
+        }
+    }
+
     private fun startXiaoyinghuoIdleMotion() {
         val logo = binding?.ivXiaoyinghuo ?: return
         if (isXiaoyinghuoFeedbackPlaying || idleAnimatorSet?.isStarted == true) return

@@ -131,6 +131,20 @@
         android:textSize="14sp"
         android:textColor="@color/text_on_dark"
         android:alpha="0.7"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintBottom_toTopOf="@id/tv_camera_source"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ★ 摄像头来源指示 -->
+    <TextView
+        android:id="@+id/tv_camera_source"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="📷 IP摄像头"
+        android:textSize="12sp"
+        android:textColor="@color/text_on_dark"
+        android:alpha="0.5"
         android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@id/bar_call_controls"
         app:layout_constraintStart_toStartOf="parent"

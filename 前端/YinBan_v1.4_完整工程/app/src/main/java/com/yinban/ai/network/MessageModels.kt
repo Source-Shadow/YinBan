@@ -167,7 +167,9 @@ data class DangerDetectedData(
     @SerializedName("danger_type") val dangerType: String = "",   // "fall" | "unresponsive" | "abnormal_audio" | "ai_detected"
     @SerializedName("confidence") val confidence: Float = 0f,
     @SerializedName("message") val message: String = "",
-    @SerializedName("patient_text") val patientText: String = ""
+    @SerializedName("patient_text") val patientText: String = "",
+    @SerializedName("danger_level") val dangerLevel: String = "warning",  // "warning" | "danger" (v2 新增)
+    @SerializedName("visual_tags") val visualTags: List<String> = emptyList()  // v2 新增：触发告警时的环境物体
 )
 
 // --- (q) Stream Stop 停止推流请求 ---
@@ -190,8 +192,28 @@ data class ChatAiRequestData(
 
 // --- (p) Chat AI Response ★ 影火AI 回复（服务器 → 患者） ---
 data class ChatAiResponseData(
+    @SerializedName("guidance") val guidance: String = "",
+    @SerializedName("danger_level") val dangerLevel: String = "normal",
+    // 向下兼容旧协议字段
     @SerializedName("reply") val reply: String = "",
     @SerializedName("is_danger") val isDanger: Boolean = false
+)
+
+// --- (q) Visual Tags Update ★ 视觉标签上报（device → 服务器） ---
+data class VisualTagsUpdateData(
+    @SerializedName("tags") val tags: List<String> = emptyList()
+)
+
+// --- (r) Generate Report Request ★ 监护人请求生成报告 ---
+data class GenerateReportRequestData(
+    @SerializedName("room") val room: String = ""
+)
+
+// --- (s) Generate Report Response ★ 报告生成结果（服务器 → 监护人） ---
+data class GenerateReportResponseData(
+    @SerializedName("report") val report: String = "",
+    @SerializedName("log_count") val logCount: Int = 0,
+    @SerializedName("generated_at") val generatedAt: String = ""
 )
 
 // ─────────────────────────────────────────────
@@ -220,4 +242,14 @@ object MessageType {
     const val CHAT_AI_RESPONSE = "chat_ai_response"
     const val STREAM_STOP = "stream_stop"
     const val STREAM_STATUS = "stream_status"
+    const val VISUAL_TAGS_UPDATE = "visual_tags_update"
+    const val GENERATE_REPORT_REQUEST = "generate_report_request"
+    const val GENERATE_REPORT_RESPONSE = "generate_report_response"
+    const val AUDIO_TRANSCRIPT = "audio_transcript"
 }
+
+// --- (t) Audio Transcript ★ 患者端持续语音识别结果 ---
+data class AudioTranscriptData(
+    @SerializedName("text") val text: String = "",
+    @SerializedName("timestamp") val timestamp: String = ""
+)

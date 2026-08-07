@@ -31,6 +31,7 @@ class PreferenceManager private constructor(context: Context) {
         private const val KEY_AVATAR_EMOJI = "avatar_emoji"  // 头像 emoji
         private const val KEY_DEEPSEEK_API_KEY = "deepseek_api_key"  // 用户自己的 DeepSeek API Key
         private const val KEY_CAMERA_URL = "camera_url"            // 硬件摄像头 MJPEG 地址
+        private const val KEY_PRIMARY_CAMERA = "primary_camera"  // 首选摄像头来源 key（ip_webcam | esp32_fisheye）
 
             private const val KEY_CHAT_HISTORY_PREFIX = "chat_history_"
 
@@ -121,6 +122,11 @@ class PreferenceManager private constructor(context: Context) {
     var cameraUrl: String
         get() = prefs.getString(KEY_CAMERA_URL, "") ?: ""
         set(value) = prefs.edit { putString(KEY_CAMERA_URL, value) }
+
+    /** 首选摄像头来源 key（"ip_webcam" | "esp32_fisheye"），默认 "ip_webcam" */
+    var primaryCamera: String
+        get() = prefs.getString(KEY_PRIMARY_CAMERA, "ip_webcam") ?: "ip_webcam"
+        set(value) = prefs.edit { putString(KEY_PRIMARY_CAMERA, value) }
 
     // ═══════════════════════════════════════════
     // 便捷方法

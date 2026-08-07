@@ -8,6 +8,7 @@ import cv2
 import time
 import json
 import os
+from dotenv import load_dotenv
 import threading
 import asyncio
 import websockets
@@ -18,6 +19,8 @@ from datetime import datetime, timezone
 from flask import Flask, Response
 from ultralytics import YOLO
 from PIL import Image, ImageDraw, ImageFont
+
+load_dotenv()
 
 # ═══════════════════════════════════════════
 # 1. 全局配置
@@ -200,6 +203,21 @@ async def send_camera_status(action: str):
         print(f"[状态上报失败]: {e}")
 
 
+async def send_visual_tags(tags: list):
+    """上报当前画面识别到的物体标签（仅在标签组合变化且间隔≥2秒时调用）"""
+    global _ws_connection
+    if _ws_connection is None:
+        return
+    try:
+        payload = {
+            "type": "visual_tags_update",
+            "data": {"tags": tags}
+        }
+        await _ws_connection.send(json.dumps(payload, ensure_ascii=False))
+    except Exception as e:
+        print(f"[标签上报失败]: {e}")
+
+
 async def handle_incoming_messages(ws):
     """处理服务器下发的控制消息"""
     try:
@@ -273,71 +291,6 @@ def stop_camera():
 # 8. 主线程: 摄像头捕获 + YOLO 推理
 # ═══════════════════════════════════════════
 
-def video_processing_loop():
-    global output_frame, latest_ai_guidance
-
-    try:
-        source = int(CAMERA_SOURCE)
-    except ValueError:
-        source = CAMERA_SOURCE
-
-    print(f"[视频] 正在尝试连接摄像头数据源: {source} ...")
-    cap = cv2.VideoCapture(source)
-
-    if not cap.isOpened():
-        print(f"[硬件错误] 无法连接到摄像头: {source}")
-        camera_active.clear()
-        return
-
-    print(f"[视频] 摄像头({source})建立连接成功！")
-
-    latest_ai_guidance = "正在初始化AI..."
-    last_api_time = 0.0
-    api_interval = 4.0  # 每 4 秒更新一次 AI 分析
-
-    while True:
-        camera_active.wait()  # 暂停控制
-
-        ret, frame = cap.read()
-        if not ret:
-            time.sleep(0.1)
-            continue
-
-        # YOLO 目标识别
-        results = yolo_model(frame, verbose=False)
-        annotated_frame = results[0].plot()
-        labels = [yolo_model.names[int(box.cls[0])] for box in results[0].boxes]
-
-        # 定时触发 DeepSeek AI 分析
-        current_time = time.time()
-        if current_time - last_api_time > api_interval:
-            detected_str = ", ".join(set(labels)) if labels else "环境空旷安全"
-            latest_ai_guidance = call_deepseek_ai(detected_str)
-
-            is_danger = any(word in detected_str for word in ["knife", "fire", "car"])
-            _run_async(send_ai_message(latest_ai_guidance, is_danger))
-            last_api_time = current_time
-
-        # 绘制 AI 字幕底部黑条与文字
-        h, w = annotated_frame.shape[:2]
-        cv2.rectangle(annotated_frame, (0, h - 60), (w, h), (20, 20, 20), -1)
-
-        with guidance_lock:
-            guidance_to_show = latest_ai_guidance
-
-        annotated_frame = put_chinese_text(
-            annotated_frame,
-            f" AI 指导:{guidance_to_show}",
-            position=(15, h - 45),
-            font_size=20
-        )
-
-        # 写入全局推流变量
-        with lock:
-            output_frame = annotated_frame.copy()
-
-        time.sleep(0.03)
-
 
 def video_processing_loop():
     global output_frame, latest_ai_guidance
@@ -364,6 +317,10 @@ def video_processing_loop():
     last_api_time = 0.0
     api_interval = 4.0  # DeepSeek 调用间隔
 
+    # 物体标签变化上报
+    last_tags = set()
+    last_tags_send_time = 0.0
+
     # 🌟 性能优化变量
     frame_count = 0
     SKIP_FRAMES = 3  # 每 3 帧才跑一次 YOLO（数值越大越流畅，1 表示不跳帧）
@@ -372,7 +329,11 @@ def video_processing_loop():
     while True:
         camera_active.wait()  # 暂停控制
 
-        ret, frame = cap.read()
+        # ✅ 优化后的代码：连续 grab() 快速跳过缓冲区里的积压旧帧，只 retrieve() 最新的一帧
+        for _ in range(5):  # 抓取并丢弃前 5 帧积压数据
+            cap.grab()
+        ret, frame = cap.retrieve()  # 只解码最新的这一帧
+
         if not ret:
             time.sleep(0.01)
             continue
@@ -391,8 +352,16 @@ def video_processing_loop():
             annotated_frame = results[0].plot()
             labels = [yolo_model.names[int(box.cls[0])] for box in results[0].boxes]
 
-            # 定时触发 DeepSeek AI 分析
             current_time = time.time()
+
+            # 物体标签变化上报：标签组合变化 且 距上次发送 ≥ 2 秒
+            current_tags = set(labels)
+            if current_tags and current_tags != last_tags and current_time - last_tags_send_time > 2.0:
+                _run_async(send_visual_tags(sorted(current_tags)))
+                last_tags = current_tags
+                last_tags_send_time = current_time
+
+            # 定时触发 DeepSeek AI 分析
             if current_time - last_api_time > api_interval:
                 detected_str = ", ".join(set(labels)) if labels else "环境空旷安全"
                 latest_ai_guidance = call_deepseek_ai(detected_str)

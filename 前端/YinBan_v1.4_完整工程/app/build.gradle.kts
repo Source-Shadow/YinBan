@@ -21,7 +21,7 @@ android {
 
         // BuildConfig 自定义字段
         buildConfigField("boolean", "SHOW_SERVER_CONFIG", "true")
-        buildConfigField("String", "WS_BASE_URL", "\"ws://10.240.11.161\"")
+        buildConfigField("String", "WS_BASE_URL", "\"ws://192.168.1.11\"")
     }
 
     buildTypes {
